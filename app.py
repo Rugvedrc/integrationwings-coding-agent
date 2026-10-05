@@ -56,7 +56,7 @@ DEFAULTS = {
     "task_history": [],
     "active_tab": "chat",
     "groq_client": None,
-    "selected_model": "llama-3.3-70b-versatile",
+    "selected_model": "openai/gpt-oss-120b",
     "stream_enabled": True,
     "show_diff": False,
     "temperature": 0.3,
@@ -80,32 +80,55 @@ def init_client():
     return False
 
 
+FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "allam-2-7b"]
+
+
 # ─── streaming wrapper ───────────────────────────────────────────────────────
 def stream_response(messages: list, model: str, temperature: float, max_tokens: int) -> Generator:
     client: Groq = st.session_state.groq_client
-    stream = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        stream=True,
-    )
-    for chunk in stream:
-        delta = chunk.choices[0].delta.content
-        if delta:
-            yield delta
+    models_to_try = [model] + [m for m in FALLBACK_MODELS if m != model]
+    
+    for m in models_to_try:
+        try:
+            stream = client.chat.completions.create(
+                model=m,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    yield delta
+            return
+        except Exception as e:
+            if "404" in str(e) or "model_not_found" in str(e):
+                continue
+            raise e
 
 
 def full_response(messages: list, model: str, temperature: float, max_tokens: int) -> str:
     client: Groq = st.session_state.groq_client
-    completion = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        stream=False,
-    )
-    return completion.choices[0].message.content
+    models_to_try = [model] + [m for m in FALLBACK_MODELS if m != model]
+    
+    last_error = None
+    for m in models_to_try:
+        try:
+            completion = client.chat.completions.create(
+                model=m,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=False,
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            last_error = e
+            if "404" in str(e) or "model_not_found" in str(e):
+                continue
+            raise e
+    raise last_error
 
 
 # ═══════════════════════════════════════════════════════════════════════════
