@@ -1,0 +1,409 @@
+/* ═══════════════════════════════════════════════════════════════════
+   AI Coding Agent — Premium Dark Theme CSS
+   IntegrationWings Assignment
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── root tokens ─────────────────────────────────────────────────── */
+:root {
+  --bg-primary:    #0d0f1a;
+  --bg-secondary:  #131625;
+  --bg-card:       #1a1e33;
+  --bg-glass:      rgba(26, 30, 51, 0.7);
+
+  --accent-primary:   #7c5cfc;
+  --accent-secondary: #5c8afc;
+  --accent-green:     #00e5a0;
+  --accent-orange:    #ff9640;
+  --accent-red:       #ff5c7a;
+
+  --text-primary:   #e8eaf0;
+  --text-secondary: #9ba3b8;
+  --text-muted:     #6b7592;
+
+  --border:         rgba(255,255,255,0.07);
+  --border-accent:  rgba(124,92,252,0.35);
+
+  --shadow-sm: 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  --glow:      0 0 24px rgba(124,92,252,0.25);
+}
+
+/* ── base & body ─────────────────────────────────────────────────── */
+html, body, [data-testid="stAppViewContainer"] {
+  background: var(--bg-primary) !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  color: var(--text-primary) !important;
+}
+
+[data-testid="stAppViewContainer"] {
+  background: linear-gradient(135deg, #0d0f1a 0%, #121630 50%, #0f1428 100%) !important;
+  min-height: 100vh;
+}
+
+/* subtle animated gradient background */
+[data-testid="stAppViewContainer"]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,92,252,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(92,138,252,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── sidebar ─────────────────────────────────────────────────────── */
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #111326 0%, #0d0f1a 100%) !important;
+  border-right: 1px solid var(--border) !important;
+  backdrop-filter: blur(20px);
+}
+
+[data-testid="stSidebar"] .sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+[data-testid="stSidebar"] .sidebar-header h1 {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 !important;
+}
+
+.robot-icon { font-size: 1.5rem; }
+
+/* ── main header ─────────────────────────────────────────────────── */
+.main-header {
+  text-align: center;
+  padding: 2rem 0 1.5rem;
+  position: relative;
+}
+
+.main-header h1 {
+  font-size: 2.8rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #a78bfa 0%, #7c5cfc 40%, #5c8afc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.main-header .subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+/* ── glassmorphism cards ─────────────────────────────────────────── */
+[data-testid="stExpander"] {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+[data-testid="stExpander"]:hover {
+  border-color: var(--border-accent) !important;
+  box-shadow: var(--glow) !important;
+}
+
+/* ── tab navigation ──────────────────────────────────────────────── */
+[data-testid="stTabs"] [role="tablist"] {
+  background: var(--bg-secondary) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  border: 1px solid var(--border) !important;
+  gap: 4px !important;
+}
+
+[data-testid="stTabs"] [role="tab"] {
+  border-radius: 8px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 16px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(124,92,252,0.35) !important;
+}
+
+[data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]) {
+  background: rgba(124,92,252,0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── buttons ─────────────────────────────────────────────────────── */
+[data-testid="stButton"] > button[kind="primary"],
+.stButton > button[kind="primary"] {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', sans-serif !important;
+  letter-spacing: 0.3px !important;
+  box-shadow: 0 4px 16px rgba(124,92,252,0.35) !important;
+  transition: all 0.25s ease !important;
+  padding: 0.5rem 1.2rem !important;
+}
+
+[data-testid="stButton"] > button[kind="primary"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(124,92,252,0.5) !important;
+}
+
+[data-testid="stButton"] > button:not([kind="primary"]) {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-testid="stButton"] > button:not([kind="primary"]):hover {
+  border-color: var(--accent-primary) !important;
+  background: rgba(124,92,252,0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── inputs & text areas ─────────────────────────────────────────── */
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] select,
+.stTextInput input,
+.stTextArea textarea {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+[data-testid="stTextInput"] input:focus,
+[data-testid="stTextArea"] textarea:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(124,92,252,0.15) !important;
+  outline: none !important;
+}
+
+/* ── code blocks ─────────────────────────────────────────────────── */
+[data-testid="stCode"],
+pre, code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+  font-size: 0.875rem !important;
+  background: #0c0e1a !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+
+/* ── metrics ─────────────────────────────────────────────────────── */
+[data-testid="stMetric"] {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  backdrop-filter: blur(10px) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+[data-testid="stMetric"]:hover {
+  border-color: var(--border-accent) !important;
+  box-shadow: var(--glow) !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: var(--text-secondary) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+}
+
+[data-testid="stMetricValue"] {
+  color: var(--text-primary) !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+}
+
+/* ── chat messages ───────────────────────────────────────────────── */
+[data-testid="stChatMessage"] {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 1rem 1.2rem !important;
+  margin-bottom: 1rem !important;
+  backdrop-filter: blur(10px) !important;
+  transition: border-color 0.2s !important;
+  animation: fadeSlideIn 0.3s ease !important;
+}
+
+[data-testid="stChatMessage"]:hover {
+  border-color: var(--border-accent) !important;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── chat input ──────────────────────────────────────────────────── */
+[data-testid="stChatInput"] {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+}
+
+[data-testid="stChatInput"]:focus-within {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(124,92,252,0.15) !important;
+}
+
+/* ── alerts ──────────────────────────────────────────────────────── */
+[data-testid="stAlert"] {
+  border-radius: 10px !important;
+  border-left-width: 4px !important;
+}
+
+/* ── dividers ────────────────────────────────────────────────────── */
+hr {
+  border-color: var(--border) !important;
+  margin: 1.2rem 0 !important;
+}
+
+/* ── scrollbars ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(124,92,252,0.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+/* ── selectbox ───────────────────────────────────────────────────── */
+[data-testid="stSelectbox"] > div > div {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── radio buttons ───────────────────────────────────────────────── */
+[data-testid="stRadio"] label {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  transition: color 0.2s !important;
+}
+
+[data-testid="stRadio"] label:hover {
+  color: var(--text-primary) !important;
+}
+
+/* ── success / error messages ────────────────────────────────────── */
+.stSuccess {
+  background: rgba(0, 229, 160, 0.08) !important;
+  border: 1px solid rgba(0, 229, 160, 0.3) !important;
+  border-radius: 10px !important;
+  color: var(--accent-green) !important;
+}
+
+.stError {
+  background: rgba(255, 92, 122, 0.08) !important;
+  border: 1px solid rgba(255, 92, 122, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+.stWarning {
+  background: rgba(255, 150, 64, 0.08) !important;
+  border: 1px solid rgba(255, 150, 64, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+/* ── file uploader ───────────────────────────────────────────────── */
+[data-testid="stFileUploader"] {
+  background: var(--bg-card) !important;
+  border: 2px dashed var(--border) !important;
+  border-radius: 12px !important;
+  transition: border-color 0.2s, background 0.2s !important;
+}
+
+[data-testid="stFileUploader"]:hover {
+  border-color: var(--accent-primary) !important;
+  background: rgba(124,92,252,0.05) !important;
+}
+
+/* ── sliders ─────────────────────────────────────────────────────── */
+[data-testid="stSlider"] [data-baseweb="slider"] [data-baseweb="thumb"] {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+/* ── toggle ──────────────────────────────────────────────────────── */
+[data-testid="stToggle"] [data-baseweb="checkbox"] {
+  background-color: var(--accent-primary) !important;
+}
+
+/* ── headings ────────────────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+h3 { font-size: 1.1rem !important; font-weight: 600 !important; }
+
+/* ── caption & small text ────────────────────────────────────────── */
+.stCaption, [data-testid="stCaption"] {
+  color: var(--text-muted) !important;
+  font-size: 0.8rem !important;
+}
+
+/* ── loading spinner ─────────────────────────────────────────────── */
+[data-testid="stSpinner"] {
+  color: var(--accent-primary) !important;
+}
+
+/* ── download button ─────────────────────────────────────────────── */
+[data-testid="stDownloadButton"] button {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--accent-primary) !important;
+  border-radius: 10px !important;
+  color: var(--accent-primary) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-testid="stDownloadButton"] button:hover {
+  background: rgba(124,92,252,0.15) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(124,92,252,0.25) !important;
+}
+
+/* ── pulse animation for active states ───────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.streaming { animation: pulse 1.2s ease-in-out infinite; }
+
+/* ── main content padding ────────────────────────────────────────── */
+.main .block-container {
+  padding-top: 1rem !important;
+  max-width: 1200px !important;
+}
