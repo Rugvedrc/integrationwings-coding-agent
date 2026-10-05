@@ -136,10 +136,8 @@ with st.sidebar:
     # ── model selector ────────────────────────────────────────────────────
     st.markdown("### ⚙️ Model Settings")
     MODELS = {
-        "🦙 Llama 3.3 70B (Recommended)": "llama-3.3-70b-versatile",
+        "🦙 Llama 3.3 70B Versatile (Recommended)": "llama-3.3-70b-versatile",
         "⚡ Llama 3.1 8B Instant": "llama-3.1-8b-instant",
-        "🔥 Llama 4 Scout 17B": "meta-llama/llama-4-scout-17b-16e-instruct",
-        "🧠 Llama 4 Maverick 17B": "meta-llama/llama-4-maverick-17b-128e-instruct",
         "💡 Mixtral 8x7B": "mixtral-8x7b-32768",
     }
     selected_label = st.selectbox("Model", list(MODELS.keys()), index=0)

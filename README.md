@@ -1,92 +1,84 @@
-# 🤖 IntegrationWings AI Coding Agent
+# 🤖 AI Coding Agent
 
-> **AI Coding Assignment — IntegrationWings Walk-in Interview 2026**  
-> Built with **Groq (Llama 3.3 70B)** + **Streamlit** · Submitted by Rugved
+> **IntegrationWings Assignment Submission — Walk-in Candidates 2026**  
+> An autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B)** and **Streamlit** for codebase understanding, natural-language task execution, interactive diff reviews, and ZIP downloads.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://YOUR_APP.streamlit.app)
-
----
-
-## 🚀 What It Does
-
-An AI-powered coding agent that can:
-
-| Feature | Description |
-|---------|-------------|
-| 📂 **Codebase Understanding** | Upload files, paste code, or fetch from GitHub URLs; auto-analyzes language, functions, classes, and structure |
-| 🎯 **Task Execution** | Accepts natural-language developer tasks and proposes precise code changes |
-| 🔀 **Diff Viewer** | Side-by-side and unified diff of every proposed change |
-| ✅ **Accept / Reject** | Accept or reject each file change independently |
-| 💬 **Chat Interface** | Streaming, multi-turn conversation with full codebase context |
-| 📦 **Export** | Download any file or the entire modified codebase as a ZIP |
-| 📜 **Task History** | Full log of every executed task and its model/output |
+[![Deployed App](https://img.shields.io/badge/Deployed--App-Live%20on%20Koyeb-brightgreen?style=for-the-badge&logo=streamlit)](https://simple-freida-rsm-b31b17a1.koyeb.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/Rugvedrc/integrationwings-coding-agent)
 
 ---
 
-## 🏗️ Architecture
+## 🌟 Key Features
+
+- 📂 **Multi-Language Codebase Analysis**: Upload files, paste raw code, or fetch from GitHub URLs. Automatically extracts functions, classes, entry points, and line count metrics across Python, JavaScript, TypeScript, Java, Go, and more.
+- 🎯 **Automated Developer Task Execution**: Takes high-level developer tasks (*"Add error handling"*, *"Write unit tests"*, *"Refactor functions"*) and generates complete updated files with detailed explanations using **Llama 3.3 70B**.
+- 🔀 **Visual Line-by-Line Diff & Review**: Independent side-by-side and unified diff viewer showing additions (+), deletions (-), and line metrics before accepting or rejecting proposed changes.
+- 💬 **Real-Time Streaming Chat**: Continuous multi-turn developer Q&A with real-time token streaming (`st.write_stream`) and context awareness.
+- 📦 **One-Click Export**: Download any modified single file or export the full updated project as a `.zip` archive.
+- 📜 **Task History**: Audit log tracking all executed tasks, models used, modified files, and explanations.
+
+---
+
+## 🏗️ System Architecture
 
 ```
 integrationwings-coding-agent/
-├── app.py                   # Main Streamlit UI
+├── app.py                   # Main Streamlit web app & interactive tabs
 ├── agent/
-│   ├── codebase_analyzer.py # Multi-language code parser (functions, classes, imports)
-│   ├── task_executor.py     # Orchestrates LLM to perform tasks + JSON output parser
-│   └── utils.py             # Helpers (language detection, ZIP, diff, token count)
+│   ├── codebase_analyzer.py # Multi-language AST/regex structure parser
+│   ├── task_executor.py     # LLM task orchestrator & JSON schema parser
+│   └── utils.py             # Language detection, token estimator, ZIP generator
 ├── assets/
-│   └── style.css            # Premium dark-mode UI (glassmorphism + gradients)
+│   └── style.css            # Dark mode UI with glassmorphism & visual tokens
 ├── .streamlit/
 │   └── config.toml          # Streamlit dark theme config
-├── .env                     # Local secrets (GROQ_API_KEY) — not committed
-├── requirements.txt
-└── README.md
+├── Dockerfile               # Container setup for production deployment
+├── requirements.txt         # Production Python dependencies
+└── README.md                # System documentation
 ```
 
-### Flow Diagram
+### Data Flow Pipeline
 
 ```
-User uploads files
+[ User Input / Files ]
        │
        ▼
-CodebaseAnalyzer ──► extracts languages, functions, classes, summary
+[ Codebase Analyzer ] ──► Extracts languages, functions, classes, imports & metrics
        │
        ▼
-User enters task ──► TaskExecutor
-       │                   │
-       │             Builds prompt with
-       │             codebase context
-       │                   │
-       │                   ▼
-       │          Groq LLM (Llama 3.3 70B)
-       │                   │
-       │          Returns JSON: {explanation, changes}
-       │                   │
-       ▼                   ▼
-  Chat + Diff Viewer ◄─── Proposed changes stored in session
+[ Developer Task Prompt ]
        │
-  Accept / Reject
+       ▼
+[ Task Executor Engine ] ──► Budget-aware prompt builder (~10k token limit)
        │
-  Export as ZIP
+       ▼
+[ Groq LPU Inference ] (Llama 3.3 70B Versatile)
+       │
+       ▼
+[ JSON Output Schema ] ──► { "explanation": "...", "changes": { "file": "code" } }
+       │
+       ▼
+[ Diff Viewer & Review ] ──► Accept / Reject ──► Download Project ZIP
 ```
 
 ---
 
 ## ⚡ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **LLM Inference** | [Groq](https://groq.com) — LPU-powered ultra-fast inference |
-| **Model** | `llama-3.3-70b-versatile` (default), with Llama 4 / Mixtral options |
-| **UI** | [Streamlit](https://streamlit.io) with streaming (`st.write_stream`) |
-| **Code Analysis** | Custom regex-based multi-language parser (Python/JS/TS/Java/Go/…) |
-| **Deployment** | [Streamlit Community Cloud](https://share.streamlit.io) |
+| Component | Technology | Rationale |
+|---|---|---|
+| **LLM Inference** | [Groq LPU](https://groq.com) | ~10× faster token generation than standard GPUs for real-time code generation |
+| **Primary Model** | `llama-3.3-70b-versatile` | High-reasoning 70B parameter model optimized for code understanding and tool use |
+| **Frontend UI** | [Streamlit](https://streamlit.io) | Interactive data & AI web framework with native streaming (`st.write_stream`) |
+| **Containerization** | Docker | Production container deployment on Koyeb |
 
 ---
 
-## 🛠️ Running Locally
+## 🚀 Running Locally
 
-### 1. Clone the repo
+### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/integrationwings-coding-agent.git
+git clone https://github.com/Rugvedrc/integrationwings-coding-agent.git
 cd integrationwings-coding-agent
 ```
 
@@ -96,63 +88,38 @@ pip install -r requirements.txt
 ```
 
 ### 3. Set your Groq API key
-Create a `.env` file:
+Create a `.env` file in the root directory:
 ```env
-GROQ_API_KEY=gsk_your_key_here
+GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
-Get your free key at [console.groq.com](https://console.groq.com).
 
-### 4. Run the app
+### 4. Run the Streamlit application
 ```bash
 streamlit run app.py
 ```
-
-The app will open at `http://localhost:8501`.
-
----
-
-## ☁️ Deployment (Streamlit Community Cloud)
-
-1. Push this repo to GitHub (public)
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Click **Create app** → select your repo → set main file to `app.py`
-4. Under **Advanced settings → Secrets**, add:
-   ```toml
-   GROQ_API_KEY = "gsk_your_key_here"
-   ```
-5. Click **Deploy** — done!
+Open `http://localhost:8501` in your browser.
 
 ---
 
-## 💡 Approach & Design Decisions
+## 💡 Approach & Technical Rationale
 
-### Why Groq?
-Groq's LPU inference provides **~10× faster** token generation than typical GPU inference. For a coding agent where users expect near-real-time code generation, this is transformative.
-
-### Structured JSON Output
-The agent always returns a strict JSON schema `{explanation, changes}`. This ensures:
-- Reliable parsing even when models add extra prose
-- Every file gets its **complete** new content (no partial diffs that break merging)
-- Clear explanation of every change for transparency
-
-### Smart Context Management
-Large codebases exceed LLM context limits. The executor scores files by relevance to the task and includes as many as will fit (40k char budget ≈ 10k tokens), truncating gracefully.
-
-### Session-based Diff / Accept / Reject
-Proposed changes never overwrite the original until the user explicitly accepts them. This mirrors real-world code review workflows.
+1. **Structured Output Guarantee**: The task engine enforces a strict JSON response contract `{explanation, changes}`. This ensures reliable code extraction without broken diff patches or syntax errors.
+2. **Smart Token Budgeting**: Large codebases are dynamically scored and prioritized based on task relevance, fitting file contents into an optimal ~10k token context budget.
+3. **Non-Destructive Review Workflow**: Proposed changes are staged in session state. Original files remain untouched until the user reviews the diff and explicitly clicks **Accept**.
+4. **Security First**: All API keys are loaded via environment variables (`.env` / platform secrets). `.env` is strictly git-ignored and no secrets or passwords are committed to the repository.
 
 ---
 
-## ⚠️ Limitations & Assumptions
+## ⚠️ Assumptions & Limitations
 
-- **Context window**: Very large codebases (>300 files) may require selecting specific files
-- **Binary files**: Only text-based source files are supported
-- **Execution**: The agent proposes changes but does not execute/test code (sandboxing is out of scope for this assignment)
-- **API rate limits**: Groq free tier has per-minute token limits; complex tasks may need retries
-- **Language support**: Best results for Python, JavaScript, TypeScript, Java, Go; other languages work but with less structure extraction
+- **Context Windows**: Codebases larger than ~40,000 characters are intelligently truncated based on file relevance scoring.
+- **Execution Sandboxing**: The agent generates, refactors, and updates code structures; local execution sandboxing was omitted for security and cloud deployment simplicity.
+- **File Types**: Optimized for text-based source files (`.py`, `.js`, `.ts`, `.java`, `.go`, `.html`, `.css`, etc.); binary assets are excluded.
 
 ---
 
-## 📄 License
+## 📄 Submission Details
 
-MIT — built for the IntegrationWings coding assignment.
+Submitted for the **IntegrationWings Walk-in Interview Assignment**:
+- **Live Deployed App**: [https://simple-freida-rsm-b31b17a1.koyeb.app](https://simple-freida-rsm-b31b17a1.koyeb.app)
+- **GitHub Repository**: [https://github.com/Rugvedrc/integrationwings-coding-agent](https://github.com/Rugvedrc/integrationwings-coding-agent)
