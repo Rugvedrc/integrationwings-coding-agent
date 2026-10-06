@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Coding Agent — IntegrationWings</title>
+  <meta name="description" content="AI-powered coding agent that understands your codebase, accepts developer tasks, proposes code changes, and shows clear results."/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Diff2Html for beautiful diffs -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Highlight.js for code syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOP NAVIGATION
+═══════════════════════════════════════════════════════════ -->
+<header id="navbar">
+  <div class="navbar-brand">
+    <span class="brand-icon">🤖</span>
+    <div>
+      <div class="brand-title">AI Coding Agent</div>
+      <div class="brand-sub">IntegrationWings Assignment</div>
+    </div>
+  </div>
+  <div class="navbar-center">
+    <div id="progress-steps">
+      <div class="step active" data-step="1"><span class="step-num">1</span><span class="step-label">Upload</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="2"><span class="step-num">2</span><span class="step-label">Analyze</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="3"><span class="step-num">3</span><span class="step-label">Task</span></div>
+      <div class="step-divider"></div>
+      <div class="step" data-step="4"><span class="step-num">4</span><span class="step-label">Review</span></div>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <span id="api-status-badge" class="badge badge-green">● API Ready</span>
+    <button id="settings-btn" class="btn btn-ghost" title="Settings">⚙️ Settings</button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SETTINGS PANEL (hidden by default)
+═══════════════════════════════════════════════════════════ -->
+<div id="settings-panel" class="settings-panel hidden">
+  <div class="settings-inner">
+    <div class="settings-header">
+      <h3>⚙️ Settings</h3>
+      <button id="settings-close" class="btn-icon">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Model</label>
+      <select id="model-select">
+        <option value="openai/gpt-oss-120b">GPT-OSS 120B (Recommended — Best Reasoning)</option>
+        <option value="openai/gpt-oss-20b">GPT-OSS 20B (Fast)</option>
+        <option value="qwen/qwen3.8-27b">Qwen3 27B</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Temperature <span class="hint">— lower = more focused code</span></label>
+      <div class="range-wrap">
+        <input type="range" id="temp-range" min="0" max="1" step="0.05" value="0.3" />
+        <span id="temp-val">0.3</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Groq API Key <span class="hint">— leave blank to use server key</span></label>
+      <input type="password" id="api-key-input" placeholder="gsk_..." />
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN LAYOUT
+═══════════════════════════════════════════════════════════ -->
+<div id="layout">
+
+  <!-- ─── LEFT SIDEBAR ────────────────────────────────────── -->
+  <aside id="sidebar">
+
+    <!-- STEP 1: Upload -->
+    <section class="sidebar-section" id="upload-section">
+      <div class="section-header">
+        <span class="step-badge">Step 1</span>
+        <h3>Upload Your Code</h3>
+      </div>
+      <p class="section-hint">Upload one or more source code files from your project. You can also paste code or provide a GitHub raw URL.</p>
+
+      <div id="upload-tabs" class="tab-strip">
+        <button class="tab-btn active" data-tab="files">📂 Files</button>
+        <button class="tab-btn" data-tab="paste">✍️ Paste</button>
+        <button class="tab-btn" data-tab="url">🔗 URL</button>
+      </div>
+
+      <!-- Files tab -->
+      <div id="tab-files" class="tab-content active">
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-icon">📁</div>
+          <p>Drag &amp; drop files here</p>
+          <p class="drop-hint">or click to browse</p>
+          <input type="file" id="file-input" multiple accept=".py,.js,.ts,.jsx,.tsx,.java,.go,.cpp,.c,.cs,.rs,.rb,.php,.html,.css,.json,.yaml,.yml,.md,.toml,.sh,.sql,.txt" />
+        </div>
+      </div>
+
+      <!-- Paste tab -->
+      <div id="tab-paste" class="tab-content hidden">
+        <div class="form-group">
+          <input type="text" id="paste-filename" placeholder="filename (e.g. main.py)" />
+        </div>
+        <textarea id="paste-code" rows="8" placeholder="Paste your source code here…"></textarea>
+        <button class="btn btn-secondary full-width" id="paste-add-btn">➕ Add to Codebase</button>
+      </div>
+
+      <!-- URL tab -->
+      <div id="tab-url" class="tab-content hidden">
+        <p class="section-hint">Enter a raw GitHub file URL:</p>
+        <input type="url" id="url-input" placeholder="https://raw.githubusercontent.com/…" />
+        <button class="btn btn-secondary full-width mt-8" id="url-fetch-btn">⬇️ Fetch File</button>
+      </div>
+
+      <!-- Loaded files list -->
+      <div id="file-list" class="file-list hidden"></div>
+
+      <button class="btn btn-primary full-width mt-12" id="analyze-btn" disabled>
+        🔍 Analyze Codebase
+      </button>
+    </section>
+
+    <!-- Codebase stats (shown after analysis) -->
+    <section class="sidebar-section hidden" id="stats-section">
+      <div class="section-header">
+        <span class="step-badge done">✓</span>
+        <h3>Codebase Overview</h3>
+      </div>
+      <div id="stats-grid" class="stats-grid"></div>
+      <div id="lang-breakdown" class="lang-list"></div>
+      <button class="btn btn-ghost full-width mt-8" id="reset-btn">🔄 Upload New Codebase</button>
+    </section>
+
+  </aside>
+
+  <!-- ─── MAIN CONTENT AREA ───────────────────────────────── -->
+  <main id="content">
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome-screen">
+      <div class="welcome-hero">
+        <div class="hero-icon">🤖</div>
+        <h1>AI Coding Agent</h1>
+        <p class="hero-subtitle">Upload your code, describe what you want changed — the AI reads your files, creates a plan, and proposes precise code changes.</p>
+      </div>
+      <div class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-grid">
+          <div class="how-step">
+            <div class="how-num">1</div>
+            <div class="how-icon">📂</div>
+            <h4>Upload Your Code</h4>
+            <p>Upload one or more files from your project. Supports Python, JavaScript, TypeScript, Java, Go, and more.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">2</div>
+            <div class="how-icon">🔍</div>
+            <h4>AI Analyzes</h4>
+            <p>The agent reads all your files, identifies functions, classes, and the project structure automatically.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">3</div>
+            <div class="how-icon">💬</div>
+            <h4>Describe Your Task</h4>
+            <p>In plain English, tell the agent what to do — add tests, fix bugs, refactor, add documentation, and more.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">4</div>
+            <div class="how-icon">✅</div>
+            <h4>Review &amp; Download</h4>
+            <p>See exactly what changed, line by line. Accept or reject changes, then download your updated project.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSIS RESULTS (shown after analyze) -->
+    <div id="analysis-screen" class="hidden">
+      <div class="screen-header">
+        <div>
+          <h2>✅ Codebase Analyzed</h2>
+          <p class="screen-sub">The AI has read your code. Now describe what you'd like it to do.</p>
+        </div>
+      </div>
+
+      <!-- Analysis summary -->
+      <div id="analysis-summary" class="analysis-card"></div>
+
+      <!-- STEP 3: Task Input -->
+      <div class="task-card" id="task-section">
+        <div class="section-header">
+          <span class="step-badge">Step 3</span>
+          <h3>Describe Your Task</h3>
+        </div>
+        <p class="section-hint">Tell the AI what you want done in plain English. Be as specific as you like.</p>
+
+        <div class="quick-tasks">
+          <span class="qt-label">Quick tasks:</span>
+          <button class="qt-btn" data-task="Add comprehensive docstrings and comments to all functions">📝 Add docs</button>
+          <button class="qt-btn" data-task="Add unit tests for all public functions">🧪 Add tests</button>
+          <button class="qt-btn" data-task="Add input validation and proper error handling">🛡️ Add validation</button>
+          <button class="qt-btn" data-task="Refactor to follow best practices and improve code quality">🔧 Refactor</button>
+          <button class="qt-btn" data-task="Fix any bugs, anti-patterns, or security issues you find">🐛 Fix bugs</button>
+          <button class="qt-btn" data-task="Generate a README.md for this project">📄 README</button>
+        </div>
+
+        <textarea id="task-input" rows="4" placeholder="Example: Add input validation to the login function and write a test for it…"></textarea>
+
+        <div class="task-actions">
+          <button class="btn btn-primary" id="execute-btn">
+            🚀 Execute Task
+          </button>
+          <span id="task-status" class="task-status hidden"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS PANEL (shown after task execution) -->
+    <div id="results-screen" class="hidden">
+      <div class="screen-header">
+        <div>
+          <h2>📋 Agent Results</h2>
+          <p class="screen-sub">Review the agent's plan, explanation, and proposed code changes below.</p>
+        </div>
+        <div class="results-actions">
+          <button class="btn btn-secondary" id="run-another-btn">← Run Another Task</button>
+          <button class="btn btn-primary" id="download-btn">📦 Download ZIP</button>
+        </div>
+      </div>
+
+      <!-- Plan -->
+      <div class="result-card" id="plan-card">
+        <div class="result-card-header">
+          <span class="result-icon">📋</span>
+          <h3>Agent Plan</h3>
+          <span class="badge badge-blue">Step 1 of 3</span>
+        </div>
+        <div id="plan-content" class="prose"></div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="result-card" id="explanation-card">
+        <div class="result-card-header">
+          <span class="result-icon">💡</span>
+          <h3>What Changed &amp; Why</h3>
+          <span class="badge badge-blue">Step 2 of 3</span>
+        </div>
+        <div id="explanation-content" class="prose"></div>
+      </div>
+
+      <!-- File Changes -->
+      <div class="result-card" id="changes-card">
+        <div class="result-card-header">
+          <span class="result-icon">🔀</span>
+          <h3>Code Changes</h3>
+          <span class="badge badge-blue">Step 3 of 3</span>
+        </div>
+        <p class="section-hint mb-12">Review each changed file below. Accept to apply the change, or reject to discard it.</p>
+        <div id="changes-list"></div>
+        <div class="changes-summary" id="changes-summary" hidden>
+          <span id="changes-count-text"></span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div><!-- /#layout -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAT DRAWER (fixed bottom-right)
+═══════════════════════════════════════════════════════════ -->
+<div id="chat-toggle-btn" title="Chat with the AI about your code">
+  💬
+  <span id="chat-toggle-label">Ask the AI</span>
+</div>
+
+<div id="chat-drawer" class="hidden">
+  <div class="chat-header">
+    <div>
+      <strong>💬 Chat with AI</strong>
+      <p class="chat-sub">Ask questions about your code</p>
+    </div>
+    <button id="chat-close-btn" class="btn-icon">✕</button>
+  </div>
+  <div id="chat-messages"></div>
+  <div class="chat-input-wrap">
+    <textarea id="chat-input" rows="2" placeholder="Ask anything about your code…"></textarea>
+    <button id="chat-send-btn" class="btn btn-primary">Send</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOADING OVERLAY
+═══════════════════════════════════════════════════════════ -->
+<div id="loading-overlay" class="hidden">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div id="loading-title">Processing…</div>
+    <div id="loading-sub" class="loading-sub"></div>
+    <div id="loading-steps" class="loading-steps"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+═══════════════════════════════════════════════════════════ -->
+<div id="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

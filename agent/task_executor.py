@@ -1,105 +1,120 @@
 """
-Task Executor
-Orchestrates the LLM to perform coding tasks on the uploaded codebase.
-Supports: code modification, bug fixing, refactoring, test generation, docs, etc.
+Task Executor — updated for FastAPI (takes Groq client directly).
 """
-
 import json
 import re
-from typing import Callable, Dict, Any, Optional, Generator
+from typing import Optional
 
+from groq import Groq
 
-SYSTEM_PROMPT = """You are an elite AI coding agent. Your job is to:
-1. Understand the developer's codebase deeply.
-2. Execute the requested task with precision.
-3. Return ONLY the modified/generated file contents in the exact JSON format specified.
-4. Provide a clear explanation of every change made.
+SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 
-## Output Format (MANDATORY)
-You MUST respond with a JSON object in this exact structure:
+1. Carefully read and understand the developer's codebase.
+2. Create a PLAN outlining which files need changes and why.
+3. Execute the requested coding task with precision.
+4. Return your response ONLY in the exact JSON format below.
+
+## MANDATORY Output Format
 ```json
 {
-  "explanation": "Clear explanation of what was changed and why",
+  "plan": "Step-by-step plan: which files you will modify and what changes you will make",
+  "explanation": "Clear explanation of all changes made and why",
   "changes": {
-    "filename.ext": "COMPLETE new file content here",
-    "another_file.ext": "COMPLETE new file content here"
+    "filename.ext": "COMPLETE new file content — never truncate with '...'",
+    "new_file.ext": "COMPLETE content for any new files created"
   }
 }
 ```
 
-Rules:
-- The "changes" dict maps filename → COMPLETE file content (not just the changed parts)
-- If you create a new file (e.g., tests, README), include it in "changes" with the new filename
-- Never truncate code with "..." or "rest of file remains..."
-- If no files need changing (e.g., a question), set "changes" to {}
-- Always write clean, production-ready code
-- Add comments where changes are made
+## Rules
+- "changes" must contain COMPLETE file contents — not diffs, not snippets
+- Never say "rest of file remains unchanged" — always write the full file
+- If no code changes are needed, set "changes" to {}
+- Write clean, production-ready, well-commented code
+- Always include the plan field — this shows your reasoning
 """
 
+FALLBACK_MODELS = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
+    "allam-2-7b",
+]
 
-def _build_codebase_context(codebase: Dict[str, str], analysis: Optional[Dict], task: str) -> str:
-    """Build a context string with relevant files for the task."""
+
+def _call_with_fallback(client: Groq, messages: list, model: str, temperature: float, max_tokens: int) -> str:
+    models = [model] + [m for m in FALLBACK_MODELS if m != model]
+    last_err = None
+    for m in models:
+        try:
+            resp = client.chat.completions.create(
+                model=m,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=False,
+            )
+            return resp.choices[0].message.content
+        except Exception as e:
+            last_err = e
+            if "404" in str(e) or "model_not_found" in str(e) or "not_found" in str(e).lower():
+                continue
+            raise e
+    raise last_err
+
+
+def _build_context(codebase: dict, analysis: Optional[dict], task: str) -> str:
     parts = []
 
-    # Analysis summary
     if analysis:
-        parts.append("## Codebase Analysis")
+        parts.append("## Codebase Overview")
         parts.append(analysis.get("summary", ""))
-        parts.append(f"Files: {', '.join(codebase.keys())}")
-        parts.append("")
+        parts.append(f"Files: {', '.join(codebase.keys())}\n")
 
-    # Include file contents — smart truncation for large codebases
     total_chars = sum(len(v) for v in codebase.values())
-    MAX_CHARS = 40_000  # ~10k tokens
+    MAX_CHARS = 40_000
 
-    parts.append("## Files")
+    parts.append("## Source Files")
     if total_chars <= MAX_CHARS:
         for fname, content in codebase.items():
             parts.append(f"\n### {fname}\n```\n{content}\n```")
     else:
-        # Prioritize smaller files and files mentioned in the task
         task_lower = task.lower()
         scored = []
         for fname, content in codebase.items():
-            score = len(content)  # smaller = higher priority (lower score)
-            if any(kw in task_lower for kw in fname.lower().split(".")):
-                score = 0  # boost files mentioned in task
+            score = len(content)
+            name_lower = fname.lower().replace(".", " ").replace("/", " ").replace("_", " ")
+            if any(w in task_lower for w in name_lower.split()):
+                score = 0
             scored.append((score, fname, content))
         scored.sort()
 
         budget = MAX_CHARS
+        shown = []
         for _, fname, content in scored:
             if len(content) <= budget:
                 parts.append(f"\n### {fname}\n```\n{content}\n```")
+                shown.append(fname)
                 budget -= len(content)
-            elif budget > 500:
-                # Include truncated
-                parts.append(f"\n### {fname} (truncated)\n```\n{content[:budget]}\n... [truncated]\n```")
+            elif budget > 1000:
+                parts.append(f"\n### {fname} (truncated)\n```\n{content[:budget]}\n# ... truncated\n```")
                 budget = 0
             if budget <= 0:
-                remaining = [f for _, f, _ in scored if f not in "\n".join(parts)]
-                if remaining:
-                    parts.append(f"\n[{len(remaining)} more file(s) not shown due to context limit]")
+                skipped = [f for _, f, _ in scored if f not in shown]
+                if skipped:
+                    parts.append(f"\n[{len(skipped)} file(s) omitted due to context limit: {', '.join(skipped)}]")
                 break
 
     return "\n".join(parts)
 
 
-def _extract_json(text: str) -> Optional[Dict]:
-    """Extract JSON from LLM response (handles markdown code blocks)."""
-    # Try direct parse first
+def _extract_json(text: str) -> Optional[dict]:
     try:
         return json.loads(text.strip())
     except json.JSONDecodeError:
         pass
 
-    # Try extracting from markdown code block
-    patterns = [
-        r"```json\s*([\s\S]+?)\s*```",
-        r"```\s*([\s\S]+?)\s*```",
-        r"\{[\s\S]+\}",
-    ]
-    for pattern in patterns:
+    for pattern in [r"```json\s*([\s\S]+?)\s*```", r"```\s*([\s\S]+?)\s*```", r"\{[\s\S]+\}"]:
         match = re.search(pattern, text, re.DOTALL)
         if match:
             candidate = match.group(1) if "```" in pattern else match.group(0)
@@ -107,56 +122,21 @@ def _extract_json(text: str) -> Optional[Dict]:
                 return json.loads(candidate.strip())
             except json.JSONDecodeError:
                 continue
-
     return None
 
 
 class TaskExecutor:
-    """
-    Executes developer tasks on a codebase using the Groq LLM.
-
-    Parameters
-    ----------
-    codebase   : dict of filename → content
-    analysis   : result from CodebaseAnalyzer.analyze()
-    model      : Groq model ID
-    temperature: LLM temperature
-    max_tokens : max output tokens
-    stream_fn  : streaming generator function (messages, model, temp, max_tokens) → Generator[str]
-    full_fn    : non-streaming function       (messages, model, temp, max_tokens) → str
-    """
-
-    def __init__(
-        self,
-        codebase: Dict[str, str],
-        analysis: Optional[Dict],
-        model: str,
-        temperature: float,
-        max_tokens: int,
-        stream_fn: Callable,
-        full_fn: Callable,
-    ):
+    def __init__(self, codebase: dict, analysis: Optional[dict], client: Groq,
+                 model: str, temperature: float, max_tokens: int):
         self.codebase = codebase
         self.analysis = analysis
+        self.client = client
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
-        self.stream_fn = stream_fn
-        self.full_fn = full_fn
 
-    def execute(self, task: str) -> Dict[str, Any]:
-        """
-        Execute a coding task.
-
-        Returns
-        -------
-        {
-            "explanation": str,
-            "proposed_changes": {filename: new_content},
-            "raw_response": str,
-        }
-        """
-        context = _build_codebase_context(self.codebase, self.analysis, task)
+    def execute(self, task: str) -> dict:
+        context = _build_context(self.codebase, self.analysis, task)
 
         user_message = f"""## Developer Task
 {task}
@@ -164,37 +144,31 @@ class TaskExecutor:
 ## Codebase
 {context}
 
-Remember: Respond ONLY with the JSON object as specified. Include COMPLETE file contents.
+Important: Respond ONLY with the JSON object. Include COMPLETE file contents in "changes".
 """
-
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ]
 
-        # Use non-streaming for task execution (need full JSON output)
-        raw = self.full_fn(messages, self.model, self.temperature, self.max_tokens)
-
-        # Parse response
+        raw = _call_with_fallback(self.client, messages, self.model, self.temperature, self.max_tokens)
         parsed = _extract_json(raw)
 
         if parsed and isinstance(parsed, dict):
-            explanation = parsed.get("explanation", "Task completed.")
-            changes = parsed.get("changes", {})
-            # Validate that returned filenames exist or are new
-            valid_changes = {
-                k: v for k, v in changes.items()
+            changes = {
+                k: v for k, v in parsed.get("changes", {}).items()
                 if isinstance(k, str) and isinstance(v, str) and v.strip()
             }
             return {
-                "explanation": explanation,
-                "proposed_changes": valid_changes,
+                "plan": parsed.get("plan", ""),
+                "explanation": parsed.get("explanation", "Task completed."),
+                "proposed_changes": changes,
                 "raw_response": raw,
             }
-        else:
-            # Fallback: treat entire response as explanation
-            return {
-                "explanation": raw,
-                "proposed_changes": {},
-                "raw_response": raw,
-            }
+
+        return {
+            "plan": "",
+            "explanation": raw,
+            "proposed_changes": {},
+            "raw_response": raw,
+        }
