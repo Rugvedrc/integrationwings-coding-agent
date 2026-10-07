@@ -39,7 +39,8 @@ SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 FALLBACK_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "deepseek-r1-distill-llama-70b",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
 ]
 
 

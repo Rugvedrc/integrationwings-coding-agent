@@ -39,7 +39,8 @@ app.add_middleware(
 FALLBACK_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "deepseek-r1-distill-llama-70b",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
 ]
 
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
@@ -174,7 +175,8 @@ async def list_models():
         "models": [
             {"id": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B Versatile (Recommended)"},
             {"id": "llama-3.1-8b-instant",    "label": "Llama 3.1 8B Instant (Fast)"},
-            {"id": "deepseek-r1-distill-llama-70b", "label": "DeepSeek R1 Distill 70B"},
+            {"id": "llama3-70b-8192",         "label": "Llama 3 70B"},
+            {"id": "llama3-8b-8192",          "label": "Llama 3 8B"},
         ]
     }
 
