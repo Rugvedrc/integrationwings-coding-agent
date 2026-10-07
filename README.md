@@ -1,7 +1,7 @@
 # AI Coding Agent
 
 > **IntegrationWings Technical Assignment Submission (Shortlisted Candidates 2026)**  
-> Autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B Versatile)** and **FastAPI / Streamlit** for multi file codebase analysis, task execution, AST syntax validation, unit test sandboxing, security auditing, and line by line diff review.
+> Autonomous AI Coding Agent powered by **Groq (GPT-OSS 120B)** and **FastAPI / Streamlit** for multi file codebase analysis, task execution, AST syntax validation, unit test sandboxing, security auditing, and line by line diff review.
 
 [![Deployed App](https://img.shields.io/badge/Deployed--App-Live%20on%20Koyeb-brightgreen?style=for-the-badge&logo=fastapi)](https://simple-freida-rsm-b31b17a1.koyeb.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/Rugvedrc/integrationwings-coding-agent)
@@ -59,7 +59,7 @@ integrationwings-coding-agent/
 [ Task Executor Engine ] ──► Context budgeting (~40k limit) & system prompt contract
        │
        ▼
-[ Groq LPU Inference ] ──► (Llama 3.3 70B Versatile / DeepSeek R1 70B)
+[ Groq LPU Inference ] ──► (GPT-OSS 120B / GPT-OSS 20B / Qwen 3.8 27B)
        │
        ▼
 [ JSON Output Contract ] ──► { "plan": "...", "explanation": "...", "changes": { "file": "code" } }
@@ -79,7 +79,7 @@ integrationwings-coding-agent/
 |---|---|---|
 | **Backend API** | [FastAPI](https://fastapi.tiangolo.com) | High-performance async Python web framework supporting SSE streaming |
 | **LLM Inference** | [Groq LPU](https://groq.com) | Ultra-fast token generation (~300+ tokens/sec) for real-time code generation |
-| **LLM Models** | `llama-3.3-70b-versatile`, `deepseek-r1-distill-llama-70b` | State-of-the-art open models for code understanding, tool calling, and reasoning |
+| **LLM Models** | `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b` | State-of-the-art open models for code understanding, tool calling, and reasoning |
 | **Frontend UI** | Vanilla HTML5 / ES6 JavaScript / CSS3 / Font Awesome 6 | Modern dark mode IDE interface without heavy framework overhead |
 | **Code Highlighting & Diffs** | Highlight.js & Diff2Html | Professional line by line diff viewing and syntax highlighting |
 | **Containerization** | Docker | Production deployment on Koyeb |

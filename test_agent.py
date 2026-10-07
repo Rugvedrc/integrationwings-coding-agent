@@ -68,14 +68,14 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         data = r.json()
         self.assertTrue(data["ok"])
-        self.assertEqual(data["default_model"], "llama-3.3-70b-versatile")
+        self.assertEqual(data["default_model"], "openai/gpt-oss-120b")
 
     def test_get_models(self):
         r = client.get("/api/models")
         self.assertEqual(r.status_code, 200)
         models = [m["id"] for m in r.json()["models"]]
-        self.assertIn("llama-3.3-70b-versatile", models)
-        self.assertIn("llama-3.1-8b-instant", models)
+        self.assertIn("openai/gpt-oss-120b", models)
+        self.assertIn("openai/gpt-oss-20b", models)
 
     def test_get_sample_projects(self):
         r = client.get("/api/sample-projects")

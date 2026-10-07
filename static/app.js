@@ -15,7 +15,7 @@ const state = {
   taskHistory: [],
   chatMessages: [],
   chatFilesSummary: '',
-  model: 'llama-3.3-70b-versatile',
+  model: 'openai/gpt-oss-120b',
   temperature: 0.3,
   apiKey: '',
   activeNav: 'task',
@@ -60,7 +60,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupHistory();
   setupChat();
   await checkAPIStatus();
+  await loadAvailableModels();
 });
+
+async function loadAvailableModels() {
+  try {
+    const res = await fetch('/api/models');
+    if (res.ok) {
+      const data = await res.json();
+      const select = $('model-select');
+      if (select && data.models && data.models.length > 0) {
+        select.innerHTML = data.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+        state.model = data.models[0].id;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load available models', e);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════
    API STATUS

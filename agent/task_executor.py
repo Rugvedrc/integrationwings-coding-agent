@@ -37,15 +37,27 @@ SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 """
 
 FALLBACK_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "llama3-70b-8192",
-    "llama3-8b-8192",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
 ]
 
 
+def _get_active_models(client: Groq) -> list:
+    try:
+        remote = [m.id for m in client.models.list().data if "whisper" not in m.id.lower() and "guard" not in m.id.lower() and "embed" not in m.id.lower() and "vision" not in m.id.lower()]
+        if remote:
+            preferred = [m for m in FALLBACK_MODELS if m in remote]
+            others = [m for m in remote if m not in FALLBACK_MODELS]
+            return preferred + others
+    except Exception:
+        pass
+    return FALLBACK_MODELS
+
+
 def _call_with_fallback(client: Groq, messages: list, model: str, temperature: float, max_tokens: int) -> str:
-    models = [model] + [m for m in FALLBACK_MODELS if m != model]
+    active_models = _get_active_models(client)
+    models = [model] + [m for m in active_models if m != model]
     seen = set()
     unique_models = []
     for m in models:

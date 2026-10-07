@@ -37,13 +37,12 @@ app.add_middleware(
 
 # ─── Groq setup ──────────────────────────────────────────────────────────────
 FALLBACK_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "llama3-70b-8192",
-    "llama3-8b-8192",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
 ]
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 
 def get_groq_client(api_key: Optional[str] = None) -> Groq:
@@ -56,8 +55,21 @@ def get_groq_client(api_key: Optional[str] = None) -> Groq:
     return Groq(api_key=key)
 
 
+def get_active_models(client: Groq) -> list:
+    try:
+        remote = [m.id for m in client.models.list().data if "whisper" not in m.id.lower() and "guard" not in m.id.lower() and "embed" not in m.id.lower() and "vision" not in m.id.lower()]
+        if remote:
+            preferred = [m for m in FALLBACK_MODELS if m in remote]
+            others = [m for m in remote if m not in FALLBACK_MODELS]
+            return preferred + others
+    except Exception:
+        pass
+    return FALLBACK_MODELS
+
+
 def call_groq(client: Groq, messages: list, model: str, temperature: float, max_tokens: int) -> str:
-    models = [model] + [m for m in FALLBACK_MODELS if m != model]
+    active_models = get_active_models(client)
+    models = [model] + [m for m in active_models if m != model]
     seen = set()
     unique_models = []
     for m in models:
@@ -86,7 +98,8 @@ def call_groq(client: Groq, messages: list, model: str, temperature: float, max_
 
 
 async def stream_groq(client: Groq, messages: list, model: str, temperature: float, max_tokens: int) -> AsyncGenerator[str, None]:
-    models = [model] + [m for m in FALLBACK_MODELS if m != model]
+    active_models = get_active_models(client)
+    models = [model] + [m for m in active_models if m != model]
     seen = set()
     unique_models = []
     for m in models:
@@ -173,10 +186,9 @@ async def status():
 async def list_models():
     return {
         "models": [
-            {"id": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B Versatile (Recommended)"},
-            {"id": "llama-3.1-8b-instant",    "label": "Llama 3.1 8B Instant (Fast)"},
-            {"id": "llama3-70b-8192",         "label": "Llama 3 70B"},
-            {"id": "llama3-8b-8192",          "label": "Llama 3 8B"},
+            {"id": "openai/gpt-oss-120b", "label": "GPT-OSS 120B (Recommended)"},
+            {"id": "openai/gpt-oss-20b",  "label": "GPT-OSS 20B (Fast)"},
+            {"id": "qwen/qwen3.8-27b",    "label": "Qwen 3.8 27B"},
         ]
     }
 

@@ -55,7 +55,7 @@ DEFAULTS = {
     "task_history": [],
     "active_tab": "chat",
     "groq_client": None,
-    "selected_model": "llama-3.3-70b-versatile",
+    "selected_model": "openai/gpt-oss-120b",
     "stream_enabled": True,
     "show_diff": False,
     "temperature": 0.3,
@@ -80,9 +80,9 @@ def init_client():
 
 
 FALLBACK_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "deepseek-r1-distill-llama-70b",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
 ]
 
 
@@ -158,9 +158,9 @@ with st.sidebar:
 
     st.markdown("### Model Settings")
     MODELS = {
-        "Llama 3.3 70B Versatile (Recommended)": "llama-3.3-70b-versatile",
-        "Llama 3.1 8B Instant (Fast)": "llama-3.1-8b-instant",
-        "DeepSeek R1 Distill 70B": "deepseek-r1-distill-llama-70b",
+        "GPT-OSS 120B (Recommended)": "openai/gpt-oss-120b",
+        "GPT-OSS 20B (Fast)": "openai/gpt-oss-20b",
+        "Qwen 3.8 27B": "qwen/qwen3.8-27b",
     }
     selected_label = st.selectbox("Model", list(MODELS.keys()), index=0)
     st.session_state.selected_model = MODELS[selected_label]
