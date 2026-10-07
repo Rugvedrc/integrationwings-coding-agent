@@ -1,21 +1,24 @@
-# 🤖 AI Coding Agent
+# ⚡ AI Coding Agent
 
-> **IntegrationWings Assignment Submission — Walk-in Candidates 2026**  
-> An autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B)** and **Streamlit** for codebase understanding, natural-language task execution, interactive diff reviews, and ZIP downloads.
+> **IntegrationWings Assignment Submission — Shortlisted Candidates 2026**  
+> An autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B Versatile)** and **FastAPI / Streamlit** for multi-file codebase understanding, developer task execution, AST syntax validation, unit test execution sandboxing, security auditing, and line-by-line diff reviews.
 
-[![Deployed App](https://img.shields.io/badge/Deployed--App-Live%20on%20Koyeb-brightgreen?style=for-the-badge&logo=streamlit)](https://simple-freida-rsm-b31b17a1.koyeb.app)
+[![Deployed App](https://img.shields.io/badge/Deployed--App-Live%20on%20Koyeb-brightgreen?style=for-the-badge&logo=fastapi)](https://simple-freida-rsm-b31b17a1.koyeb.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/Rugvedrc/integrationwings-coding-agent)
 
 ---
 
-## 🌟 Key Features
+## 🌟 Key Features & Capabilities
 
-- 📂 **Multi-Language Codebase Analysis**: Upload files, paste raw code, or fetch from GitHub URLs. Automatically extracts functions, classes, entry points, and line count metrics across Python, JavaScript, TypeScript, Java, Go, and more.
-- 🎯 **Automated Developer Task Execution**: Takes high-level developer tasks (*"Add error handling"*, *"Write unit tests"*, *"Refactor functions"*) and generates complete updated files with detailed explanations using **Llama 3.3 70B**.
-- 🔀 **Visual Line-by-Line Diff & Review**: Independent side-by-side and unified diff viewer showing additions (+), deletions (-), and line metrics before accepting or rejecting proposed changes.
-- 💬 **Real-Time Streaming Chat**: Continuous multi-turn developer Q&A with real-time token streaming (`st.write_stream`) and context awareness.
-- 📦 **One-Click Export**: Download any modified single file or export the full updated project as a `.zip` archive.
-- 📜 **Task History**: Audit log tracking all executed tasks, models used, modified files, and explanations.
+- 🚀 **1-Click Pre-packaged Demo Projects**: Instant evaluation with real-world sample codebases (FastAPI REST API, Node.js Express Auth Service, Python Data Processing Pipeline).
+- 📂 **Multi-Language Codebase Analysis**: Supports Python, JavaScript, TypeScript, Java, Go, Rust, C/C++, HTML/CSS, SQL, JSON, YAML, TOML, and Markdown. Automatically parses functions, classes, imports, entry points, and line metrics using AST & regex inspection.
+- 🎯 **Automated Developer Task Execution**: Accepts plain-English developer prompts (*"Add input validation"*, *"Write pytest unit tests"*, *"Refactor for performance"*), creates a step-by-step modification plan, and generates complete updated files.
+- 🛡️ **AST Syntax Validation Engine**: Automatically verifies Python syntax (`ast.parse`) and JSON/YAML structures across generated files before presenting results to the user.
+- 🧪 **Automated Unit Test Sandbox**: Runs `unittest` suites on uploaded or generated Python codebases in an isolated temporary container and displays pass/fail assertions live.
+- 🛡️ **AI Security & Quality Audit**: Performs automated code scans for OWASP vulnerabilities, hardcoded secrets, SQL injection risks, and unhandled exception boundaries with letter grade ratings (A, B, C, D, F).
+- 🔀 **Interactive Line-by-Line Diff Reviewer**: Visual Side-by-Side and Unified diff inspector with line addition (+), deletion (-) metrics, instant per-file Accept/Reject controls, and an inline **Manual Code Editor**.
+- 📦 **One-Click Export**: Download any individual updated file or export the entire project as a `.zip` archive.
+- 💬 **Real-Time Streaming Chat Assistant**: Multi-turn developer conversation with real-time SSE token streaming and full codebase context awareness.
 
 ---
 
@@ -23,42 +26,49 @@
 
 ```
 integrationwings-coding-agent/
-├── app.py                   # Main Streamlit web app & interactive tabs
+├── main.py                  # FastAPI server hosting REST & SSE endpoints
+├── app.py                   # Streamlit web application interface
 ├── agent/
-│   ├── codebase_analyzer.py # Multi-language AST/regex structure parser
-│   ├── task_executor.py     # LLM task orchestrator & JSON schema parser
-│   └── utils.py             # Language detection, token estimator, ZIP generator
-├── assets/
-│   └── style.css            # Dark mode UI with glassmorphism & visual tokens
-├── .streamlit/
-│   └── config.toml          # Streamlit dark theme config
-├── Dockerfile               # Container setup for production deployment
-├── requirements.txt         # Production Python dependencies
-└── README.md                # System documentation
+│   ├── codebase_analyzer.py # AST & regex multi-language codebase parser
+│   ├── task_executor.py     # LLM task orchestrator & JSON schema engine
+│   ├── sample_codebases.py  # Pre-packaged interactive demo codebases
+│   ├── validator.py         # AST syntax validator & isolated test sandbox
+│   └── utils.py             # Language detection, token estimator, ZIP builder
+├── static/
+│   ├── index.html           # Professional IDE workspace frontend
+│   ├── app.js               # Frontend application logic & SSE streaming
+│   └── style.css            # Dark mode glassmorphism IDE stylesheet
+├── Dockerfile               # Production container config (Koyeb)
+├── requirements.txt         # Production dependencies
+├── test_agent.py            # Automated unit test suite
+└── README.md                # Technical documentation
 ```
 
 ### Data Flow Pipeline
 
 ```
-[ User Input / Files ]
+[ User Prompt / Demo Codebase ]
        │
        ▼
-[ Codebase Analyzer ] ──► Extracts languages, functions, classes, imports & metrics
+[ Codebase Analyzer ] ──► Parses AST, languages, functions, classes, and syntax integrity
        │
        ▼
 [ Developer Task Prompt ]
        │
        ▼
-[ Task Executor Engine ] ──► Budget-aware prompt builder (~10k token limit)
+[ Task Executor Engine ] ──► Context budgeting (~40k limit) & system prompt contract
        │
        ▼
-[ Groq LPU Inference ] (Llama 3.3 70B Versatile)
+[ Groq LPU Inference ] ──► (Llama 3.3 70B Versatile / DeepSeek R1 70B)
        │
        ▼
-[ JSON Output Schema ] ──► { "explanation": "...", "changes": { "file": "code" } }
+[ JSON Output Contract ] ──► { "plan": "...", "explanation": "...", "changes": { "file": "code" } }
        │
        ▼
-[ Diff Viewer & Review ] ──► Accept / Reject ──► Download Project ZIP
+[ AST Syntax Check & Test Sandbox ] ──► Validates syntax & runs unit tests
+       │
+       ▼
+[ Diff Inspector & Manual Editor ] ──► Accept / Reject / Edit ──► Export ZIP Archive
 ```
 
 ---
@@ -67,10 +77,12 @@ integrationwings-coding-agent/
 
 | Component | Technology | Rationale |
 |---|---|---|
-| **LLM Inference** | [Groq LPU](https://groq.com) | ~10× faster token generation than standard GPUs for real-time code generation |
-| **Primary Model** | `llama-3.3-70b-versatile` | High-reasoning 70B parameter model optimized for code understanding and tool use |
-| **Frontend UI** | [Streamlit](https://streamlit.io) | Interactive data & AI web framework with native streaming (`st.write_stream`) |
-| **Containerization** | Docker | Production container deployment on Koyeb |
+| **Backend API** | [FastAPI](https://fastapi.tiangolo.com) | High-performance async Python web framework supporting SSE streaming |
+| **LLM Inference** | [Groq LPU](https://groq.com) | Ultra-fast token generation (~300+ tokens/sec) for real-time code generation |
+| **LLM Models** | `llama-3.3-70b-versatile`, `deepseek-r1-distill-llama-70b` | State-of-the-art open models for code understanding, tool calling, and reasoning |
+| **Frontend UI** | Vanilla HTML5 / ES6 JavaScript / CSS3 | Modern dark-mode IDE interface without heavy framework overhead |
+| **Code Highlighting & Diffs** | Highlight.js & Diff2Html | Professional line-by-line diff viewing and syntax highlighting |
+| **Containerization** | Docker | Production deployment on Koyeb |
 
 ---
 
@@ -88,38 +100,40 @@ pip install -r requirements.txt
 ```
 
 ### 3. Set your Groq API key
-Create a `.env` file in the root directory:
+Create a `.env` file in the project root:
 ```env
 GROQ_API_KEY=gsk_your_groq_api_key_here
 ```
 
-### 4. Run the Streamlit application
+### 4. Run the application
+Run the FastAPI backend server:
 ```bash
-streamlit run app.py
+python main.py
 ```
-Open `http://localhost:8501` in your browser.
+Open `http://localhost:7860` in your web browser.
+
+*(Alternatively, run the Streamlit interface using `streamlit run app.py`)*
+
+### 5. Run Backend Unit Tests
+```bash
+python test_agent.py
+```
 
 ---
 
 ## 💡 Approach & Technical Rationale
 
-1. **Structured Output Guarantee**: The task engine enforces a strict JSON response contract `{explanation, changes}`. This ensures reliable code extraction without broken diff patches or syntax errors.
-2. **Smart Token Budgeting**: Large codebases are dynamically scored and prioritized based on task relevance, fitting file contents into an optimal ~10k token context budget.
-3. **Non-Destructive Review Workflow**: Proposed changes are staged in session state. Original files remain untouched until the user reviews the diff and explicitly clicks **Accept**.
-4. **Security First**: All API keys are loaded via environment variables (`.env` / platform secrets). `.env` is strictly git-ignored and no secrets or passwords are committed to the repository.
-
----
-
-## ⚠️ Assumptions & Limitations
-
-- **Context Windows**: Codebases larger than ~40,000 characters are intelligently truncated based on file relevance scoring.
-- **Execution Sandboxing**: The agent generates, refactors, and updates code structures; local execution sandboxing was omitted for security and cloud deployment simplicity.
-- **File Types**: Optimized for text-based source files (`.py`, `.js`, `.ts`, `.java`, `.go`, `.html`, `.css`, etc.); binary assets are excluded.
+1. **Strict JSON Schema Contract**: The task engine enforces a mandatory JSON output schema (`{plan, explanation, changes}`). This prevents malformed patch syntax and ensures whole-file integrity.
+2. **Context-Aware Budgeting**: Large codebases are scored and filtered by task relevance to fit within optimal context windows.
+3. **Automated Verification Pipeline**: Generated code is parsed with Python's native `ast` module to catch any syntax flaws before presentation.
+4. **Isolated Test Sandboxing**: Tests are executed inside a temporary workspace directory using Python's `unittest` runner, protecting the primary host system.
+5. **Non-Destructive Staging Workflow**: Original files remain unchanged until the user reviews diffs and explicitly accepts proposed changes.
+6. **Zero Hardcoded Secrets**: All credentials and API keys are loaded strictly via environment variables or user input. `.env` is strictly git-ignored.
 
 ---
 
 ## 📄 Submission Details
 
-Submitted for the **IntegrationWings Walk-in Interview Assignment**:
+Submitted for the **IntegrationWings Walk-in Candidate Assignment**:
 - **Live Deployed App**: [https://simple-freida-rsm-b31b17a1.koyeb.app](https://simple-freida-rsm-b31b17a1.koyeb.app)
 - **GitHub Repository**: [https://github.com/Rugvedrc/integrationwings-coding-agent](https://github.com/Rugvedrc/integrationwings-coding-agent)

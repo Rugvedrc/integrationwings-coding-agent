@@ -1,16 +1,18 @@
 """
-Task Executor — updated for FastAPI (takes Groq client directly).
+Task Executor Engine
+Orchestrates prompt construction, LLM tool execution on Groq, and JSON patch extraction.
 """
 import json
 import re
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from groq import Groq
+from agent.validator import validate_codebase_syntax
 
 SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 
 1. Carefully read and understand the developer's codebase.
-2. Create a PLAN outlining which files need changes and why.
+2. Create a step-by-step PLAN outlining which files need changes and why.
 3. Execute the requested coding task with precision.
 4. Return your response ONLY in the exact JSON format below.
 
@@ -35,10 +37,10 @@ SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 """
 
 FALLBACK_MODELS = [
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
-    "qwen/qwen3.8-27b",
-    "allam-2-7b",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+    "deepseek-r1-distill-llama-70b",
 ]
 
 
@@ -159,10 +161,16 @@ Important: Respond ONLY with the JSON object. Include COMPLETE file contents in 
                 k: v for k, v in parsed.get("changes", {}).items()
                 if isinstance(k, str) and isinstance(v, str) and v.strip()
             }
+
+            # Run syntax validation on merged codebase
+            merged = {**self.codebase, **changes}
+            syntax_val = validate_codebase_syntax(merged)
+
             return {
                 "plan": parsed.get("plan", ""),
                 "explanation": parsed.get("explanation", "Task completed."),
                 "proposed_changes": changes,
+                "syntax_validation": syntax_val,
                 "raw_response": raw,
             }
 
@@ -170,5 +178,6 @@ Important: Respond ONLY with the JSON object. Include COMPLETE file contents in 
             "plan": "",
             "explanation": raw,
             "proposed_changes": {},
+            "syntax_validation": {"all_valid": True, "files_checked": 0, "details": []},
             "raw_response": raw,
         }
