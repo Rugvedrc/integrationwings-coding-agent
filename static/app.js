@@ -27,6 +27,21 @@ const state = {
 const $ = id => document.getElementById(id);
 const $$ = sel => document.querySelectorAll(sel);
 
+/* ── HELPER: SAFE ERROR PARSER ───────────────────────────── */
+async function parseResponseError(res, defaultMsg = 'Request failed') {
+  try {
+    const errObj = await res.json();
+    return errObj.detail || errObj.message || defaultMsg;
+  } catch (e) {
+    try {
+      const text = await res.text();
+      return text || defaultMsg;
+    } catch {
+      return defaultMsg;
+    }
+  }
+}
+
 /* ── INIT ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
@@ -238,7 +253,10 @@ function setupURL() {
     $('url-fetch-btn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Fetching...';
     try {
       const r = await fetch(`/api/fetch-url?url=${encodeURIComponent(url)}`);
-      if (!r.ok) throw new Error(await r.text());
+      if (!r.ok) {
+        const errMsg = await parseResponseError(r, 'Failed to fetch URL');
+        throw new Error(errMsg);
+      }
       const data = await r.json();
       state.files[data.filename] = data.content;
       state.originalFiles[data.filename] = data.content;
@@ -247,7 +265,7 @@ function setupURL() {
       $('analyze-btn').disabled = false;
       showToast(`Fetched: ${data.filename}`, 'success');
     } catch (e) {
-      showToast(`Failed to fetch: ${e.message}`, 'error');
+      showToast(`Fetch Error: ${e.message}`, 'error');
     } finally {
       $('url-fetch-btn').disabled = false;
       $('url-fetch-btn').innerHTML = '<i class="fa-solid fa-download"></i> Fetch File';
@@ -284,6 +302,7 @@ async function loadDemoProjectsList() {
   listEl.innerHTML = '<p class="text-muted text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading sample projects...</p>';
   try {
     const res = await fetch('/api/sample-projects');
+    if (!res.ok) throw new Error(await parseResponseError(res));
     const data = await res.json();
     listEl.innerHTML = data.projects.map(p => `
       <div class="demo-card" data-id="${p.id}">
@@ -308,7 +327,7 @@ async function loadSpecificDemoProject(projectId) {
   showLoading('Loading Sample Project...', 'Fetching project files...');
   try {
     const res = await fetch(`/api/sample-projects/${projectId}`);
-    if (!res.ok) throw new Error('Sample project not found');
+    if (!res.ok) throw new Error(await parseResponseError(res, 'Sample project not found'));
     const project = await res.json();
 
     state.files = { ...project.files };
@@ -372,7 +391,10 @@ async function analyzeCodebase() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ files: state.files }),
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      const errMsg = await parseResponseError(res, 'Codebase analysis failed');
+      throw new Error(errMsg);
+    }
     state.analysis = await res.json();
     hideLoading();
     renderAnalysis();
@@ -485,8 +507,8 @@ async function executeTask() {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Task execution failed');
+      const errMsg = await parseResponseError(res, 'Task execution failed');
+      throw new Error(errMsg);
     }
 
     const data = await res.json();
@@ -907,7 +929,10 @@ function setupSecurityAudit() {
         }),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const errMsg = await parseResponseError(res, 'Security audit failed');
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       hideLoading();
 
@@ -964,7 +989,10 @@ function setupTestSandbox() {
         body: JSON.stringify({ files: activeFiles }),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const errMsg = await parseResponseError(res, 'Test execution failed');
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       hideLoading();
 
@@ -1049,7 +1077,7 @@ async function downloadZIP() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ files: finalFiles }),
     });
-    if (!res.ok) throw new Error('Download failed');
+    if (!res.ok) throw new Error(await parseResponseError(res, 'Download failed'));
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

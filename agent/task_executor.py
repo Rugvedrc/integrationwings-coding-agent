@@ -45,8 +45,15 @@ FALLBACK_MODELS = [
 
 def _call_with_fallback(client: Groq, messages: list, model: str, temperature: float, max_tokens: int) -> str:
     models = [model] + [m for m in FALLBACK_MODELS if m != model]
-    last_err = None
+    seen = set()
+    unique_models = []
     for m in models:
+        if m and m not in seen:
+            seen.add(m)
+            unique_models.append(m)
+
+    last_err = None
+    for m in unique_models:
         try:
             resp = client.chat.completions.create(
                 model=m,
@@ -59,10 +66,11 @@ def _call_with_fallback(client: Groq, messages: list, model: str, temperature: f
         except Exception as e:
             last_err = e
             err_str = str(e).lower()
-            if any(k in err_str for k in ["404", "400", "decommissioned", "model_not_found", "not_found", "invalid_request_error"]):
-                continue
-            raise e
-    raise last_err
+            if "401" in err_str or "invalid_api_key" in err_str or "unauthorized" in err_str:
+                raise Exception("Invalid Groq API key. Please configure a valid key in Settings or environment variables.") from e
+            continue
+
+    raise Exception(f"AI Service Error: {str(last_err)}")
 
 
 def _build_context(codebase: dict, analysis: Optional[dict], task: str) -> str:
