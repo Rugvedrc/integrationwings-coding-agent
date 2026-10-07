@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Coding Agent — IntegrationWings Assignment</title>
-  <meta name="description" content="Autonomous AI Coding Agent that analyzes codebases, accepts developer tasks, executes plan-based code changes, validates syntax, runs unit tests, and presents interactive diffs."/>
+  <title>AI Coding Agent | IntegrationWings Assignment</title>
+  <meta name="description" content="Autonomous AI Coding Agent for codebase analysis, task execution, AST syntax validation, unit test sandboxing, security auditing, and line by line diff review."/>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- Diff2Html for line-by-line diffs -->
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Diff2Html for line by line diffs -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
 
@@ -31,31 +34,31 @@
 <header id="navbar">
   <div class="navbar-brand">
     <div class="brand-logo">
-      <span class="logo-icon">⚡</span>
+      <i class="fa-solid fa-code"></i>
     </div>
     <div>
       <div class="brand-title">AI Coding Agent</div>
-      <div class="brand-sub">IntegrationWings Assignment Submission</div>
+      <div class="brand-sub">IntegrationWings Technical Assignment</div>
     </div>
   </div>
 
   <nav class="navbar-center">
     <div class="nav-tabs" id="main-nav-tabs">
-      <button class="nav-tab active" data-nav="task">🎯 Agent Task</button>
-      <button class="nav-tab" data-nav="explorer">📂 Code Explorer</button>
-      <button class="nav-tab" data-nav="diff">🔀 Diff Reviewer <span id="diff-count-badge" class="nav-badge hidden">0</span></button>
-      <button class="nav-tab" data-nav="audit">🛡️ Security Audit</button>
-      <button class="nav-tab" data-nav="tests">🧪 Test Sandbox</button>
-      <button class="nav-tab" data-nav="history">📜 History</button>
+      <button class="nav-tab active" data-nav="task"><i class="fa-solid fa-terminal"></i> Agent Task</button>
+      <button class="nav-tab" data-nav="explorer"><i class="fa-solid fa-folder-open"></i> Code Explorer</button>
+      <button class="nav-tab" data-nav="diff"><i class="fa-solid fa-code-compare"></i> Diff Reviewer <span id="diff-count-badge" class="nav-badge hidden">0</span></button>
+      <button class="nav-tab" data-nav="audit"><i class="fa-solid fa-shield-halved"></i> Security Audit</button>
+      <button class="nav-tab" data-nav="tests"><i class="fa-solid fa-vial"></i> Test Sandbox</button>
+      <button class="nav-tab" data-nav="history"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
     </div>
   </nav>
 
   <div class="navbar-right">
-    <button id="demo-projects-btn" class="btn btn-secondary btn-sm" title="Load pre-built sample project">
-      🚀 Demo Projects
+    <button id="demo-projects-btn" class="btn btn-secondary btn-sm" title="Load pre built sample project">
+      <i class="fa-solid fa-rocket"></i> Demo Projects
     </button>
-    <span id="api-status-badge" class="badge badge-green">● API Ready</span>
-    <button id="settings-btn" class="btn btn-ghost btn-sm" title="Settings">⚙️ Settings</button>
+    <span id="api-status-badge" class="badge badge-green"><i class="fa-solid fa-circle"></i> API Ready</span>
+    <button id="settings-btn" class="btn btn-ghost btn-sm" title="Configuration Settings"><i class="fa-solid fa-sliders"></i> Settings</button>
   </div>
 </header>
 
@@ -65,27 +68,26 @@
 <div id="settings-panel" class="settings-panel hidden">
   <div class="settings-inner">
     <div class="settings-header">
-      <h3>⚙️ Configuration Settings</h3>
-      <button id="settings-close" class="btn-icon">✕</button>
+      <h3><i class="fa-solid fa-sliders"></i> Configuration Settings</h3>
+      <button id="settings-close" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="form-group">
       <label>LLM Model</label>
       <select id="model-select">
         <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Recommended)</option>
         <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Fast)</option>
-        <option value="mixtral-8x7b-32768">Mixtral 8x7B (32k Context)</option>
         <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B</option>
       </select>
     </div>
     <div class="form-group">
-      <label>Temperature <span class="hint">— lower = precise code</span></label>
+      <label>Temperature <span class="hint">(lower = precise code)</span></label>
       <div class="range-wrap">
         <input type="range" id="temp-range" min="0" max="1" step="0.05" value="0.3" />
         <span id="temp-val">0.30</span>
       </div>
     </div>
     <div class="form-group">
-      <label>Groq API Key <span class="hint">— leave blank to use backend environment key</span></label>
+      <label>Groq API Key <span class="hint">(optional override)</span></label>
       <input type="password" id="api-key-input" placeholder="gsk_..." />
     </div>
   </div>
@@ -97,8 +99,8 @@
 <div id="demo-modal" class="modal-overlay hidden">
   <div class="modal-card">
     <div class="modal-header">
-      <h3>🚀 Load Pre-built Sample Project</h3>
-      <button id="demo-modal-close" class="btn-icon">✕</button>
+      <h3><i class="fa-solid fa-rocket"></i> Load Pre Built Sample Project</h3>
+      <button id="demo-modal-close" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <p class="modal-desc">Test the agent instantly without uploading local files. Select one of the sample codebases below:</p>
     <div id="demo-projects-list" class="demo-list">
@@ -113,13 +115,13 @@
 <div id="edit-code-modal" class="modal-overlay hidden">
   <div class="modal-card modal-lg">
     <div class="modal-header">
-      <h3>✏️ Edit Proposed Code — <span id="edit-filename-title"></span></h3>
-      <button id="edit-modal-close" class="btn-icon">✕</button>
+      <h3><i class="fa-solid fa-pen-to-square"></i> Edit Proposed Code: <span id="edit-filename-title"></span></h3>
+      <button id="edit-modal-close" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <p class="modal-desc">Fine-tune or tweak the AI-generated code before applying it to your codebase.</p>
+    <p class="modal-desc">Fine tune or adjust the AI generated code before applying it to your codebase.</p>
     <textarea id="edit-code-textarea" rows="18" class="code-editor-font"></textarea>
     <div class="modal-actions mt-12">
-      <button class="btn btn-primary" id="save-edit-btn">💾 Save &amp; Update Proposed Code</button>
+      <button class="btn btn-primary" id="save-edit-btn"><i class="fa-solid fa-floppy-disk"></i> Save Code Updates</button>
       <button class="btn btn-ghost" id="cancel-edit-btn">Cancel</button>
     </div>
   </div>
@@ -142,17 +144,17 @@
       <p class="section-hint">Upload project files, paste source code, or fetch from GitHub.</p>
 
       <div id="upload-tabs" class="tab-strip">
-        <button class="tab-btn active" data-tab="files">📂 Files</button>
-        <button class="tab-btn" data-tab="paste">✍️ Paste</button>
-        <button class="tab-btn" data-tab="url">🔗 URL</button>
+        <button class="tab-btn active" data-tab="files"><i class="fa-solid fa-file-arrow-up"></i> Files</button>
+        <button class="tab-btn" data-tab="paste"><i class="fa-solid fa-pen"></i> Paste</button>
+        <button class="tab-btn" data-tab="url"><i class="fa-solid fa-link"></i> URL</button>
       </div>
 
       <!-- Files tab -->
       <div id="tab-files" class="tab-content active">
         <div id="drop-zone" class="drop-zone">
-          <div class="drop-icon">📁</div>
-          <p>Drag &amp; drop source files here</p>
-          <p class="drop-hint">or click to browse</p>
+          <div class="drop-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <p>Drag and drop source files here</p>
+          <p class="drop-hint">or click to browse local files</p>
           <input type="file" id="file-input" multiple accept=".py,.js,.ts,.jsx,.tsx,.java,.go,.cpp,.c,.cs,.rs,.rb,.php,.html,.css,.json,.yaml,.yml,.md,.toml,.sh,.sql,.txt" />
         </div>
       </div>
@@ -162,20 +164,20 @@
         <div class="form-group">
           <input type="text" id="paste-filename" placeholder="filename (e.g. main.py)" />
         </div>
-        <textarea id="paste-code" rows="6" placeholder="Paste your source code here…"></textarea>
-        <button class="btn btn-secondary full-width mt-8" id="paste-add-btn">➕ Add File to Codebase</button>
+        <textarea id="paste-code" rows="6" placeholder="Paste your source code here..."></textarea>
+        <button class="btn btn-secondary full-width mt-8" id="paste-add-btn"><i class="fa-solid fa-plus"></i> Add File to Codebase</button>
       </div>
 
       <!-- URL tab -->
       <div id="tab-url" class="tab-content hidden">
         <p class="section-hint">Fetch raw file from GitHub:</p>
-        <input type="url" id="url-input" placeholder="https://raw.githubusercontent.com/…" />
-        <button class="btn btn-secondary full-width mt-8" id="url-fetch-btn">⬇️ Fetch File</button>
+        <input type="url" id="url-input" placeholder="https://raw.githubusercontent.com/..." />
+        <button class="btn btn-secondary full-width mt-8" id="url-fetch-btn"><i class="fa-solid fa-download"></i> Fetch File</button>
       </div>
 
       <!-- Quick Demo Projects Prompt -->
       <div class="demo-quick-banner mt-12">
-        <span>💡 Need sample code?</span>
+        <span><i class="fa-solid fa-lightbulb"></i> Need sample code?</span>
         <button id="quick-demo-trigger" class="link-btn">Load Demo Project</button>
       </div>
 
@@ -183,22 +185,22 @@
       <div id="file-list" class="file-list hidden"></div>
 
       <button class="btn btn-primary full-width mt-12" id="analyze-btn" disabled>
-        🔍 Analyze Codebase
+        <i class="fa-solid fa-magnifying-glass"></i> Analyze Codebase
       </button>
     </section>
 
     <!-- Codebase stats (shown after analysis) -->
     <section class="sidebar-section hidden" id="stats-section">
       <div class="section-header">
-        <span class="step-badge done">✓ Analyzed</span>
+        <span class="step-badge done"><i class="fa-solid fa-check"></i> Analyzed</span>
         <h3>Codebase Metrics</h3>
       </div>
       <div id="syntax-status-pill" class="syntax-pill syntax-valid mb-12">
-        <span class="pill-icon">✓</span> Syntax Validated
+        <span class="pill-icon"><i class="fa-solid fa-shield-check"></i></span> Syntax Validated
       </div>
       <div id="stats-grid" class="stats-grid"></div>
       <div id="lang-breakdown" class="lang-list"></div>
-      <button class="btn btn-ghost full-width mt-12" id="reset-btn">🔄 Clear &amp; Upload New Codebase</button>
+      <button class="btn btn-ghost full-width mt-12" id="reset-btn"><i class="fa-solid fa-rotate-left"></i> Upload New Codebase</button>
     </section>
 
   </aside>
@@ -212,40 +214,40 @@
       <!-- WELCOME HERO SCREEN -->
       <div id="welcome-screen">
         <div class="welcome-hero">
-          <div class="hero-badge">Autonomous AI Developer</div>
-          <h1>Understand · Propose · Transform Code</h1>
-          <p class="hero-subtitle">Upload your codebase or select a demo project. Describe your developer task in natural language — the AI creates a plan, generates code, validates syntax, and presents line-by-line diffs.</p>
+          <div class="hero-badge"><i class="fa-solid fa-robot"></i> Autonomous AI Developer</div>
+          <h1>Understand, Propose, Transform Code</h1>
+          <p class="hero-subtitle">Upload your codebase or select a pre built sample project. Describe your coding task in natural language. The agent generates a structured plan, implements code changes, validates syntax, and presents line by line diffs.</p>
           <div class="hero-actions">
-            <button class="btn btn-primary btn-lg" id="welcome-demo-btn">🚀 Load FastAPI Demo Project</button>
+            <button class="btn btn-primary btn-lg" id="welcome-demo-btn"><i class="fa-solid fa-rocket"></i> Load FastAPI Demo Project</button>
           </div>
         </div>
 
         <div class="how-it-works">
-          <h2>Agent Workflow Architecture</h2>
+          <h2>Agent Workflow Pipeline</h2>
           <div class="steps-grid">
             <div class="how-step">
               <div class="how-num">1</div>
-              <div class="how-icon">📂</div>
+              <div class="how-icon"><i class="fa-solid fa-folder-tree"></i></div>
               <h4>1. Codebase Parsing</h4>
-              <p>Multi-language AST &amp; structure parser extracts functions, classes, imports, and line metrics.</p>
+              <p>AST and pattern analysis extracts functions, classes, dependencies, and line metrics.</p>
             </div>
             <div class="how-step">
               <div class="how-num">2</div>
-              <div class="how-icon">📋</div>
+              <div class="how-icon"><i class="fa-solid fa-list-check"></i></div>
               <h4>2. Task Planning</h4>
-              <p>The agent formulates a step-by-step modification plan using high-reasoning LLM inference.</p>
+              <p>Formulates a structured step by step plan outlining target files and technical rationale.</p>
             </div>
             <div class="how-step">
               <div class="how-num">3</div>
-              <div class="how-icon">⚡</div>
+              <div class="how-icon"><i class="fa-solid fa-code"></i></div>
               <h4>3. Patch Generation</h4>
-              <p>Generates production-grade file changes adhering to strict JSON output contracts.</p>
+              <p>Generates complete updated files adhering to strict JSON response contracts.</p>
             </div>
             <div class="how-step">
               <div class="how-num">4</div>
-              <div class="how-icon">🛡️</div>
-              <h4>4. Validation &amp; Diff</h4>
-              <p>AST syntax check, line-by-line diff inspection, unit test execution, and ZIP export.</p>
+              <div class="how-icon"><i class="fa-solid fa-check-double"></i></div>
+              <h4>4. Validation &amp; Diffs</h4>
+              <p>AST syntax check, line by line diff inspection, unit test execution, and ZIP export.</p>
             </div>
           </div>
         </div>
@@ -255,7 +257,7 @@
       <div id="analysis-screen" class="hidden">
         <div class="screen-header">
           <div>
-            <h2>✅ Codebase Analyzed</h2>
+            <h2><i class="fa-solid fa-circle-check text-green"></i> Codebase Analyzed</h2>
             <p class="screen-sub">Structure extracted. Describe what task you would like the AI agent to execute.</p>
           </div>
         </div>
@@ -269,22 +271,22 @@
             <span class="step-badge">Step 3</span>
             <h3>Describe Developer Task</h3>
           </div>
-          <p class="section-hint">Enter your task requirement in plain English. The agent will read your files and propose code changes.</p>
+          <p class="section-hint">Enter your task requirement in plain English. The agent will analyze your codebase and propose code changes.</p>
 
           <div class="quick-tasks">
             <span class="qt-label">Task Presets:</span>
-            <button class="qt-btn" data-task="Add comprehensive input validation, docstrings, and error handling">🛡️ Input Validation</button>
-            <button class="qt-btn" data-task="Add unit tests for all public functions and APIs">🧪 Write Unit Tests</button>
-            <button class="qt-btn" data-task="Refactor functions to follow clean code best practices and improve performance">🔧 Refactor Code</button>
-            <button class="qt-btn" data-task="Fix any potential security bugs, unhandled exceptions, or anti-patterns">🐛 Fix Bugs &amp; Risks</button>
-            <button class="qt-btn" data-task="Generate a comprehensive technical README.md for this project">📄 Generate README</button>
+            <button class="qt-btn" data-task="Add comprehensive input validation, docstrings, and error handling"><i class="fa-solid fa-shield-halved"></i> Input Validation</button>
+            <button class="qt-btn" data-task="Add unit tests for all public functions and APIs"><i class="fa-solid fa-vial"></i> Write Unit Tests</button>
+            <button class="qt-btn" data-task="Refactor functions to follow clean code best practices and improve performance"><i class="fa-solid fa-wrench"></i> Refactor Code</button>
+            <button class="qt-btn" data-task="Fix any potential security bugs, unhandled exceptions, or anti-patterns"><i class="fa-solid fa-bug"></i> Fix Bugs &amp; Risks</button>
+            <button class="qt-btn" data-task="Generate a comprehensive technical README.md for this project"><i class="fa-solid fa-file-lines"></i> Generate README</button>
           </div>
 
-          <textarea id="task-input" rows="4" placeholder="e.g. Add Pydantic input validation to the create_user endpoint and write unit tests in test_main.py…"></textarea>
+          <textarea id="task-input" rows="4" placeholder="Example: Add Pydantic input validation to user registration endpoints and write unit tests in test_main.py..."></textarea>
 
           <div class="task-actions">
             <button class="btn btn-primary btn-lg" id="execute-btn">
-              🚀 Execute Task &amp; Propose Changes
+              <i class="fa-solid fa-play"></i> Execute Task &amp; Propose Changes
             </button>
             <span id="task-status" class="task-status hidden"></span>
           </div>
@@ -295,25 +297,25 @@
       <div id="results-screen" class="hidden">
         <div class="screen-header">
           <div>
-            <h2>📋 Agent Execution Results</h2>
-            <p class="screen-sub">Review the agent's step-by-step plan, detailed rationale, and line-by-line diffs.</p>
+            <h2><i class="fa-solid fa-square-poll-vertical"></i> Agent Execution Results</h2>
+            <p class="screen-sub">Review the agent's plan, implementation details, and line by line diffs.</p>
           </div>
           <div class="results-actions">
-            <button class="btn btn-secondary" id="run-another-btn">← New Task</button>
-            <button class="btn btn-primary" id="download-btn">📦 Export ZIP</button>
+            <button class="btn btn-secondary" id="run-another-btn"><i class="fa-solid fa-arrow-left"></i> New Task</button>
+            <button class="btn btn-primary" id="download-btn"><i class="fa-solid fa-file-zipper"></i> Export ZIP</button>
           </div>
         </div>
 
         <!-- Syntax Check Banner -->
         <div id="result-syntax-banner" class="alert-banner alert-success mb-16">
-          <span>✓ <strong>Syntax Verification:</strong> All proposed code changes passed Python AST / syntax integrity checks.</span>
+          <span><i class="fa-solid fa-circle-check"></i> <strong>Syntax Verification:</strong> All proposed code changes passed AST syntax integrity checks.</span>
         </div>
 
         <!-- Plan -->
         <div class="result-card" id="plan-card">
           <div class="result-card-header">
-            <span class="result-icon">📋</span>
-            <h3>1. Agent Step-by-Step Plan</h3>
+            <span class="result-icon"><i class="fa-solid fa-list-check"></i></span>
+            <h3>1. Agent Modification Plan</h3>
             <span class="badge badge-blue">Reasoning Phase</span>
           </div>
           <div id="plan-content" class="prose"></div>
@@ -322,7 +324,7 @@
         <!-- Explanation -->
         <div class="result-card" id="explanation-card">
           <div class="result-card-header">
-            <span class="result-icon">💡</span>
+            <span class="result-icon"><i class="fa-solid fa-lightbulb"></i></span>
             <h3>2. Technical Rationale &amp; Changes Made</h3>
             <span class="badge badge-blue">Implementation Summary</span>
           </div>
@@ -332,11 +334,11 @@
         <!-- File Changes -->
         <div class="result-card" id="changes-card">
           <div class="result-card-header">
-            <span class="result-icon">🔀</span>
-            <h3>3. Line-by-Line Code Changes &amp; Diffs</h3>
+            <span class="result-icon"><i class="fa-solid fa-code-compare"></i></span>
+            <h3>3. Line by Line Code Changes &amp; Diffs</h3>
             <span class="badge badge-blue">Interactive Review</span>
           </div>
-          <p class="section-hint mb-12">Inspect diffs below. Click Accept to apply changes, Reject to discard, or Edit to tweak code manually.</p>
+          <p class="section-hint mb-12">Inspect diffs below. Click Accept to apply changes, Reject to discard, or Edit to adjust code manually.</p>
           <div id="changes-list"></div>
           <div class="changes-summary" id="changes-summary" hidden>
             <span id="changes-count-text"></span>
@@ -350,8 +352,8 @@
     <div id="tab-view-explorer" class="tab-view hidden">
       <div class="screen-header">
         <div>
-          <h2>📂 Codebase Explorer</h2>
-          <p class="screen-sub">Browse, inspect, and copy source files in your active workspace.</p>
+          <h2><i class="fa-solid fa-folder-open"></i> Codebase Explorer</h2>
+          <p class="screen-sub">Inspect and copy source files in your active workspace.</p>
         </div>
         <div class="explorer-mode-switch">
           <label><input type="radio" name="explorer_source" value="current" checked /> Current Codebase</label>
@@ -366,7 +368,7 @@
         <div class="explorer-code-view">
           <div class="code-view-header">
             <span id="explorer-filename-label" class="filename-tag">No file selected</span>
-            <button id="copy-code-btn" class="btn btn-ghost btn-sm">📋 Copy Code</button>
+            <button id="copy-code-btn" class="btn btn-ghost btn-sm"><i class="fa-solid fa-copy"></i> Copy Code</button>
           </div>
           <pre><code id="explorer-code-block" class="language-plaintext">Select a file from the list on the left to inspect its contents.</code></pre>
         </div>
@@ -377,12 +379,12 @@
     <div id="tab-view-diff" class="tab-view hidden">
       <div class="screen-header">
         <div>
-          <h2>🔀 Dedicated Diff Inspector</h2>
-          <p class="screen-sub">Side-by-side and unified diff review for proposed modifications.</p>
+          <h2><i class="fa-solid fa-code-compare"></i> Dedicated Diff Inspector</h2>
+          <p class="screen-sub">Side by side and unified diff review for proposed modifications.</p>
         </div>
         <div class="diff-format-toggle">
           <button class="btn btn-secondary btn-sm active" id="diff-unified-btn">Unified View</button>
-          <button class="btn btn-secondary btn-sm" id="diff-sidebyside-btn">Side-by-Side View</button>
+          <button class="btn btn-secondary btn-sm" id="diff-sidebyside-btn">Side by Side View</button>
         </div>
       </div>
 
@@ -395,17 +397,17 @@
     <div id="tab-view-audit" class="tab-view hidden">
       <div class="screen-header">
         <div>
-          <h2>🛡️ Security &amp; Quality Audit Engine</h2>
-          <p class="screen-sub">Scan codebase for OWASP vulnerabilities, hardcoded secrets, SQL injection, and code smells.</p>
+          <h2><i class="fa-solid fa-shield-halved"></i> Security &amp; Quality Audit Engine</h2>
+          <p class="screen-sub">Scan codebase for OWASP vulnerabilities, hardcoded credentials, SQL injection, and code smells.</p>
         </div>
-        <button class="btn btn-primary" id="run-audit-btn">🛡️ Run Security Scan</button>
+        <button class="btn btn-primary" id="run-audit-btn"><i class="fa-solid fa-shield-halved"></i> Run Security Scan</button>
       </div>
 
       <div id="audit-results-container">
         <div class="empty-state-card">
-          <div class="empty-icon">🛡️</div>
+          <div class="empty-icon"><i class="fa-solid fa-shield-cat"></i></div>
           <h3>Automated Security &amp; Quality Inspection</h3>
-          <p>Click <strong>Run Security Scan</strong> to perform an automated code audit. The agent evaluates vulnerability risks, hardcoded credentials, missing input sanitization, and architectural anti-patterns.</p>
+          <p>Click <strong>Run Security Scan</strong> to perform an automated code audit. The agent evaluates vulnerability risks, credential exposures, missing input sanitization, and code anti-patterns.</p>
         </div>
       </div>
     </div>
@@ -414,17 +416,17 @@
     <div id="tab-view-tests" class="tab-view hidden">
       <div class="screen-header">
         <div>
-          <h2>🧪 Automated Unit Test Sandbox</h2>
+          <h2><i class="fa-solid fa-vial"></i> Automated Unit Test Sandbox</h2>
           <p class="screen-sub">Execute Python unit tests in an isolated sandbox environment and inspect execution outputs.</p>
         </div>
-        <button class="btn btn-primary" id="run-tests-btn">🧪 Execute Unit Tests</button>
+        <button class="btn btn-primary" id="run-tests-btn"><i class="fa-solid fa-play"></i> Execute Unit Tests</button>
       </div>
 
       <div id="tests-results-container">
         <div class="empty-state-card">
-          <div class="empty-icon">🧪</div>
+          <div class="empty-icon"><i class="fa-solid fa-flask-vial"></i></div>
           <h3>Isolated Test Runner</h3>
-          <p>Click <strong>Execute Unit Tests</strong> to run unit tests discovered in your codebase. The backend provisions a sandbox container, runs `unittest`, and streams test assertions live.</p>
+          <p>Click <strong>Execute Unit Tests</strong> to run unit tests discovered in your codebase. The backend provisions an isolated sandbox, runs unittest discovery, and reports assertions live.</p>
         </div>
       </div>
     </div>
@@ -433,10 +435,10 @@
     <div id="tab-view-history" class="tab-view hidden">
       <div class="screen-header">
         <div>
-          <h2>📜 Task Execution Audit Log</h2>
-          <p class="screen-sub">Chronological history of all developer tasks executed during this session.</p>
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> Task Execution Audit Log</h2>
+          <p class="screen-sub">Chronological audit history of developer tasks executed during this session.</p>
         </div>
-        <button class="btn btn-ghost" id="clear-history-btn">🗑️ Clear Audit Log</button>
+        <button class="btn btn-ghost" id="clear-history-btn"><i class="fa-solid fa-trash"></i> Clear Audit Log</button>
       </div>
 
       <div id="history-list-container">
@@ -452,21 +454,21 @@
      CHAT DRAWER (fixed bottom-right)
 ═══════════════════════════════════════════════════════════ -->
 <div id="chat-toggle-btn" title="Chat with AI Agent about your codebase">
-  💬 <span id="chat-toggle-label">Ask AI Assistant</span>
+  <i class="fa-solid fa-comments"></i> <span id="chat-toggle-label">Ask AI Assistant</span>
 </div>
 
 <div id="chat-drawer" class="hidden">
   <div class="chat-header">
     <div>
-      <strong>💬 Codebase AI Assistant</strong>
-      <p class="chat-sub">Interactive code Q&amp;A &amp; refactoring guidance</p>
+      <strong><i class="fa-solid fa-robot"></i> Codebase AI Assistant</strong>
+      <p class="chat-sub">Interactive code Q&amp;A and refactoring guidance</p>
     </div>
-    <button id="chat-close-btn" class="btn-icon">✕</button>
+    <button id="chat-close-btn" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div id="chat-messages"></div>
   <div class="chat-input-wrap">
-    <textarea id="chat-input" rows="2" placeholder="Ask questions about your code structure or logic…"></textarea>
-    <button id="chat-send-btn" class="btn btn-primary">Send</button>
+    <textarea id="chat-input" rows="2" placeholder="Ask questions about your code logic or structure..."></textarea>
+    <button id="chat-send-btn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
   </div>
 </div>
 
@@ -476,7 +478,7 @@
 <div id="loading-overlay" class="hidden">
   <div class="loading-card">
     <div class="spinner"></div>
-    <div id="loading-title">Processing…</div>
+    <div id="loading-title">Processing...</div>
     <div id="loading-sub" class="loading-sub"></div>
     <div id="loading-steps" class="loading-steps"></div>
   </div>

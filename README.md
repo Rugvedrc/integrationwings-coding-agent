@@ -1,7 +1,7 @@
-# ⚡ AI Coding Agent
+# AI Coding Agent
 
-> **IntegrationWings Assignment Submission — Shortlisted Candidates 2026**  
-> An autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B Versatile)** and **FastAPI / Streamlit** for multi-file codebase understanding, developer task execution, AST syntax validation, unit test execution sandboxing, security auditing, and line-by-line diff reviews.
+> **IntegrationWings Technical Assignment Submission (Shortlisted Candidates 2026)**  
+> Autonomous AI Coding Agent powered by **Groq (Llama 3.3 70B Versatile)** and **FastAPI / Streamlit** for multi file codebase analysis, task execution, AST syntax validation, unit test sandboxing, security auditing, and line by line diff review.
 
 [![Deployed App](https://img.shields.io/badge/Deployed--App-Live%20on%20Koyeb-brightgreen?style=for-the-badge&logo=fastapi)](https://simple-freida-rsm-b31b17a1.koyeb.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/Rugvedrc/integrationwings-coding-agent)
@@ -10,15 +10,15 @@
 
 ## 🌟 Key Features & Capabilities
 
-- 🚀 **1-Click Pre-packaged Demo Projects**: Instant evaluation with real-world sample codebases (FastAPI REST API, Node.js Express Auth Service, Python Data Processing Pipeline).
-- 📂 **Multi-Language Codebase Analysis**: Supports Python, JavaScript, TypeScript, Java, Go, Rust, C/C++, HTML/CSS, SQL, JSON, YAML, TOML, and Markdown. Automatically parses functions, classes, imports, entry points, and line metrics using AST & regex inspection.
-- 🎯 **Automated Developer Task Execution**: Accepts plain-English developer prompts (*"Add input validation"*, *"Write pytest unit tests"*, *"Refactor for performance"*), creates a step-by-step modification plan, and generates complete updated files.
+- 🚀 **1 Click Pre Packaged Demo Projects**: Instant evaluation with real world sample codebases (FastAPI REST API, Node.js Express Auth Service, Python Data Processing Pipeline).
+- 📂 **Multi Language Codebase Analysis**: Supports Python, JavaScript, TypeScript, Java, Go, Rust, C/C++, HTML/CSS, SQL, JSON, YAML, TOML, and Markdown. Automatically parses functions, classes, imports, entry points, and line metrics using AST and regex inspection.
+- 🎯 **Automated Developer Task Execution**: Accepts plain English developer prompts (*"Add input validation"*, *"Write pytest unit tests"*, *"Refactor for performance"*), creates a step by step modification plan, and generates complete updated files.
 - 🛡️ **AST Syntax Validation Engine**: Automatically verifies Python syntax (`ast.parse`) and JSON/YAML structures across generated files before presenting results to the user.
 - 🧪 **Automated Unit Test Sandbox**: Runs `unittest` suites on uploaded or generated Python codebases in an isolated temporary container and displays pass/fail assertions live.
-- 🛡️ **AI Security & Quality Audit**: Performs automated code scans for OWASP vulnerabilities, hardcoded secrets, SQL injection risks, and unhandled exception boundaries with letter grade ratings (A, B, C, D, F).
-- 🔀 **Interactive Line-by-Line Diff Reviewer**: Visual Side-by-Side and Unified diff inspector with line addition (+), deletion (-) metrics, instant per-file Accept/Reject controls, and an inline **Manual Code Editor**.
-- 📦 **One-Click Export**: Download any individual updated file or export the entire project as a `.zip` archive.
-- 💬 **Real-Time Streaming Chat Assistant**: Multi-turn developer conversation with real-time SSE token streaming and full codebase context awareness.
+- 🛡️ **AI Security & Quality Audit**: Performs automated code scans for OWASP vulnerabilities, hardcoded credentials, SQL injection risks, and unhandled exception boundaries with letter grade ratings (A, B, C, D, F).
+- 🔀 **Interactive Line by Line Diff Reviewer**: Visual Side by Side and Unified diff inspector with line addition (+), deletion (-) metrics, instant per file Accept/Reject controls, and an inline **Manual Code Editor**.
+- 📦 **One Click Export**: Download any individual updated file or export the entire project as a `.zip` archive.
+- 💬 **Real Time Streaming Chat Assistant**: Multi turn developer conversation with real time SSE token streaming and full codebase context awareness.
 
 ---
 
@@ -29,9 +29,9 @@ integrationwings-coding-agent/
 ├── main.py                  # FastAPI server hosting REST & SSE endpoints
 ├── app.py                   # Streamlit web application interface
 ├── agent/
-│   ├── codebase_analyzer.py # AST & regex multi-language codebase parser
+│   ├── codebase_analyzer.py # AST & regex multi language codebase parser
 │   ├── task_executor.py     # LLM task orchestrator & JSON schema engine
-│   ├── sample_codebases.py  # Pre-packaged interactive demo codebases
+│   ├── sample_codebases.py  # Pre packaged interactive demo codebases
 │   ├── validator.py         # AST syntax validator & isolated test sandbox
 │   └── utils.py             # Language detection, token estimator, ZIP builder
 ├── static/
@@ -80,8 +80,8 @@ integrationwings-coding-agent/
 | **Backend API** | [FastAPI](https://fastapi.tiangolo.com) | High-performance async Python web framework supporting SSE streaming |
 | **LLM Inference** | [Groq LPU](https://groq.com) | Ultra-fast token generation (~300+ tokens/sec) for real-time code generation |
 | **LLM Models** | `llama-3.3-70b-versatile`, `deepseek-r1-distill-llama-70b` | State-of-the-art open models for code understanding, tool calling, and reasoning |
-| **Frontend UI** | Vanilla HTML5 / ES6 JavaScript / CSS3 | Modern dark-mode IDE interface without heavy framework overhead |
-| **Code Highlighting & Diffs** | Highlight.js & Diff2Html | Professional line-by-line diff viewing and syntax highlighting |
+| **Frontend UI** | Vanilla HTML5 / ES6 JavaScript / CSS3 / Font Awesome 6 | Modern dark mode IDE interface without heavy framework overhead |
+| **Code Highlighting & Diffs** | Highlight.js & Diff2Html | Professional line by line diff viewing and syntax highlighting |
 | **Containerization** | Docker | Production deployment on Koyeb |
 
 ---
@@ -123,17 +123,17 @@ python test_agent.py
 
 ## 💡 Approach & Technical Rationale
 
-1. **Strict JSON Schema Contract**: The task engine enforces a mandatory JSON output schema (`{plan, explanation, changes}`). This prevents malformed patch syntax and ensures whole-file integrity.
-2. **Context-Aware Budgeting**: Large codebases are scored and filtered by task relevance to fit within optimal context windows.
+1. **Strict JSON Schema Contract**: The task engine enforces a mandatory JSON output schema (`{plan, explanation, changes}`). This prevents malformed patch syntax and ensures whole file integrity.
+2. **Context Aware Budgeting**: Large codebases are scored and filtered by task relevance to fit within optimal context windows.
 3. **Automated Verification Pipeline**: Generated code is parsed with Python's native `ast` module to catch any syntax flaws before presentation.
 4. **Isolated Test Sandboxing**: Tests are executed inside a temporary workspace directory using Python's `unittest` runner, protecting the primary host system.
-5. **Non-Destructive Staging Workflow**: Original files remain unchanged until the user reviews diffs and explicitly accepts proposed changes.
-6. **Zero Hardcoded Secrets**: All credentials and API keys are loaded strictly via environment variables or user input. `.env` is strictly git-ignored.
+5. **Non Destructive Staging Workflow**: Original files remain unchanged until the user reviews diffs and explicitly accepts proposed changes.
+6. **Zero Hardcoded Secrets**: All credentials and API keys are loaded strictly via environment variables or user input. `.env` is strictly git ignored.
 
 ---
 
 ## 📄 Submission Details
 
-Submitted for the **IntegrationWings Walk-in Candidate Assignment**:
+Submitted for the **IntegrationWings Technical Assignment**:
 - **Live Deployed App**: [https://simple-freida-rsm-b31b17a1.koyeb.app](https://simple-freida-rsm-b31b17a1.koyeb.app)
 - **GitHub Repository**: [https://github.com/Rugvedrc/integrationwings-coding-agent](https://github.com/Rugvedrc/integrationwings-coding-agent)

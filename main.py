@@ -1,10 +1,11 @@
 """
-AI Coding Agent — FastAPI Backend
+AI Coding Agent: FastAPI Backend
 IntegrationWings Assignment
 """
 import io
 import json
 import os
+import re
 import zipfile
 from typing import AsyncGenerator, Optional, Dict, Any, List
 
@@ -38,7 +39,6 @@ app.add_middleware(
 FALLBACK_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
     "deepseek-r1-distill-llama-70b",
 ]
 
@@ -70,7 +70,8 @@ def call_groq(client: Groq, messages: list, model: str, temperature: float, max_
             return resp.choices[0].message.content
         except Exception as e:
             last_err = e
-            if "404" in str(e) or "model_not_found" in str(e) or "not_found" in str(e).lower():
+            err_str = str(e).lower()
+            if any(k in err_str for k in ["404", "400", "decommissioned", "model_not_found", "not_found", "invalid_request_error"]):
                 continue
             raise e
     raise last_err
@@ -94,7 +95,8 @@ async def stream_groq(client: Groq, messages: list, model: str, temperature: flo
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
             return
         except Exception as e:
-            if "404" in str(e) or "model_not_found" in str(e) or "not_found" in str(e).lower():
+            err_str = str(e).lower()
+            if any(k in err_str for k in ["404", "400", "decommissioned", "model_not_found", "not_found", "invalid_request_error"]):
                 continue
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
             return
@@ -158,7 +160,6 @@ async def list_models():
         "models": [
             {"id": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B Versatile (Recommended)"},
             {"id": "llama-3.1-8b-instant",    "label": "Llama 3.1 8B Instant (Fast)"},
-            {"id": "mixtral-8x7b-32768",      "label": "Mixtral 8x7B (32k Context)"},
             {"id": "deepseek-r1-distill-llama-70b", "label": "DeepSeek R1 Distill 70B"},
         ]
     }
@@ -166,7 +167,6 @@ async def list_models():
 
 @app.get("/api/sample-projects")
 async def list_sample_projects():
-    """Returns metadata for pre-packaged demo projects."""
     return {
         "projects": [
             {
@@ -184,7 +184,6 @@ async def list_sample_projects():
 
 @app.get("/api/sample-projects/{project_id}")
 async def get_sample_project(project_id: str):
-    """Returns files for a specific sample project."""
     if project_id not in SAMPLE_PROJECTS:
         raise HTTPException(status_code=404, detail="Sample project not found.")
     return SAMPLE_PROJECTS[project_id]
@@ -196,7 +195,6 @@ async def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="No files provided.")
     analyzer = CodebaseAnalyzer(req.files)
     result = analyzer.analyze()
-    # Add syntax check
     result["syntax_validation"] = validate_codebase_syntax(req.files)
     return JSONResponse(content=result)
 
@@ -273,8 +271,7 @@ Respond ONLY in JSON format:
     ]
 
     raw = call_groq(client, messages, req.model, 0.2, 4096)
-    
-    # Extract JSON
+
     try:
         data = json.loads(raw.strip())
     except Exception:

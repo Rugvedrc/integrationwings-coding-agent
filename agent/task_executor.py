@@ -12,7 +12,7 @@ from agent.validator import validate_codebase_syntax
 SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
 
 1. Carefully read and understand the developer's codebase.
-2. Create a step-by-step PLAN outlining which files need changes and why.
+2. Create a step-by-step plan outlining which files need changes and why.
 3. Execute the requested coding task with precision.
 4. Return your response ONLY in the exact JSON format below.
 
@@ -22,24 +22,23 @@ SYSTEM_PROMPT = """You are an elite AI Coding Agent. Your role is to:
   "plan": "Step-by-step plan: which files you will modify and what changes you will make",
   "explanation": "Clear explanation of all changes made and why",
   "changes": {
-    "filename.ext": "COMPLETE new file content — never truncate with '...'",
+    "filename.ext": "COMPLETE new file content (never truncate with '...')",
     "new_file.ext": "COMPLETE content for any new files created"
   }
 }
 ```
 
 ## Rules
-- "changes" must contain COMPLETE file contents — not diffs, not snippets
-- Never say "rest of file remains unchanged" — always write the full file
+- "changes" must contain COMPLETE file contents: not diffs, not snippets
+- Never say "rest of file remains unchanged": always write the full file
 - If no code changes are needed, set "changes" to {}
 - Write clean, production-ready, well-commented code
-- Always include the plan field — this shows your reasoning
+- Always include the plan field: this shows your reasoning
 """
 
 FALLBACK_MODELS = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
     "deepseek-r1-distill-llama-70b",
 ]
 
@@ -59,7 +58,8 @@ def _call_with_fallback(client: Groq, messages: list, model: str, temperature: f
             return resp.choices[0].message.content
         except Exception as e:
             last_err = e
-            if "404" in str(e) or "model_not_found" in str(e) or "not_found" in str(e).lower():
+            err_str = str(e).lower()
+            if any(k in err_str for k in ["404", "400", "decommissioned", "model_not_found", "not_found", "invalid_request_error"]):
                 continue
             raise e
     raise last_err
@@ -162,7 +162,6 @@ Important: Respond ONLY with the JSON object. Include COMPLETE file contents in 
                 if isinstance(k, str) and isinstance(v, str) and v.strip()
             }
 
-            # Run syntax validation on merged codebase
             merged = {**self.codebase, **changes}
             syntax_val = validate_codebase_syntax(merged)
 

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   AI Coding Agent — Application Logic (v2.0)
+   AI Coding Agent: Application Logic (v2.0)
    IntegrationWings Assignment
    ═══════════════════════════════════════════════ */
 
@@ -56,10 +56,10 @@ async function checkAPIStatus() {
     const data = await res.json();
     const badge = $('api-status-badge');
     if (data.api_key_configured) {
-      badge.textContent = '● API Ready';
+      badge.innerHTML = '<i class="fa-solid fa-circle"></i> API Ready';
       badge.className = 'badge badge-green';
     } else {
-      badge.textContent = '⚠ No API Key';
+      badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> API Key Missing';
       badge.className = 'badge badge-amber';
     }
   } catch (e) {
@@ -78,12 +78,10 @@ function setupNavigation() {
     });
   });
 
-  // Explorer radio toggle
   document.querySelectorAll('input[name="explorer_source"]').forEach(radio => {
     radio.addEventListener('change', renderCodeExplorer);
   });
 
-  // Dedicated diff toggle
   $('diff-unified-btn')?.addEventListener('click', () => {
     state.diffFormat = 'unified';
     $('diff-unified-btn').classList.add('active');
@@ -100,7 +98,7 @@ function setupNavigation() {
   $('copy-code-btn')?.addEventListener('click', () => {
     const code = $('explorer-code-block').textContent;
     navigator.clipboard.writeText(code);
-    showToast('📋 Code copied to clipboard!', 'success');
+    showToast('Code copied to clipboard!', 'success');
   });
 }
 
@@ -199,9 +197,9 @@ function renderFileList() {
     <div class="file-item">
       <div>
         <div class="fname">${escHtml(name)}</div>
-        <div class="fmeta">${(state.files[name].length / 1024).toFixed(1)} KB · ${state.files[name].split('\n').length} lines</div>
+        <div class="fmeta">${(state.files[name].length / 1024).toFixed(1)} KB | ${state.files[name].split('\n').length} lines</div>
       </div>
-      <button class="remove-btn" data-file="${escAttr(name)}" title="Remove">✕</button>
+      <button class="remove-btn" data-file="${escAttr(name)}" title="Remove"><i class="fa-solid fa-xmark"></i></button>
     </div>
   `).join('');
 
@@ -228,7 +226,7 @@ function setupPaste() {
     $('paste-code').value = '';
     renderFileList();
     $('analyze-btn').disabled = false;
-    showToast(`✅ Added: ${name}`, 'success');
+    showToast(`Added: ${name}`, 'success');
   });
 }
 
@@ -237,7 +235,7 @@ function setupURL() {
     const url = $('url-input').value.trim();
     if (!url) { showToast('Please enter a URL', 'error'); return; }
     $('url-fetch-btn').disabled = true;
-    $('url-fetch-btn').textContent = '⏳ Fetching…';
+    $('url-fetch-btn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Fetching...';
     try {
       const r = await fetch(`/api/fetch-url?url=${encodeURIComponent(url)}`);
       if (!r.ok) throw new Error(await r.text());
@@ -247,12 +245,12 @@ function setupURL() {
       $('url-input').value = '';
       renderFileList();
       $('analyze-btn').disabled = false;
-      showToast(`✅ Fetched: ${data.filename}`, 'success');
+      showToast(`Fetched: ${data.filename}`, 'success');
     } catch (e) {
       showToast(`Failed to fetch: ${e.message}`, 'error');
     } finally {
       $('url-fetch-btn').disabled = false;
-      $('url-fetch-btn').textContent = '⬇️ Fetch File';
+      $('url-fetch-btn').innerHTML = '<i class="fa-solid fa-download"></i> Fetch File';
     }
   });
 }
@@ -283,13 +281,13 @@ function setupDemoProjects() {
 
 async function loadDemoProjectsList() {
   const listEl = $('demo-projects-list');
-  listEl.innerHTML = '<p class="text-muted text-center">Loading sample projects…</p>';
+  listEl.innerHTML = '<p class="text-muted text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading sample projects...</p>';
   try {
     const res = await fetch('/api/sample-projects');
     const data = await res.json();
     listEl.innerHTML = data.projects.map(p => `
       <div class="demo-card" data-id="${p.id}">
-        <div class="demo-card-title">🚀 ${escHtml(p.name)}</div>
+        <div class="demo-card-title"><i class="fa-solid fa-cube text-indigo"></i> ${escHtml(p.name)}</div>
         <div class="demo-card-desc">${escHtml(p.description)}</div>
         <div class="demo-card-meta">
           <span>Language: <strong>${p.language}</strong></span>
@@ -307,7 +305,7 @@ async function loadDemoProjectsList() {
 }
 
 async function loadSpecificDemoProject(projectId) {
-  showLoading('Loading Sample Project…', 'Fetching pre-packaged files…');
+  showLoading('Loading Sample Project...', 'Fetching project files...');
   try {
     const res = await fetch(`/api/sample-projects/${projectId}`);
     if (!res.ok) throw new Error('Sample project not found');
@@ -324,15 +322,12 @@ async function loadSpecificDemoProject(projectId) {
     renderFileList();
     $('analyze-btn').disabled = false;
 
-    // Set task hint
     if (project.suggested_task) {
       $('task-input').value = project.suggested_task;
     }
 
     hideLoading();
-    showToast(`✅ Loaded Demo: ${project.name}`, 'success');
-
-    // Automatically trigger analyze
+    showToast(`Loaded Demo: ${project.name}`, 'success');
     await analyzeCodebase();
   } catch (e) {
     hideLoading();
@@ -364,10 +359,10 @@ function setupAnalyze() {
 async function analyzeCodebase() {
   if (Object.keys(state.files).length === 0) { showToast('Please upload files first', 'error'); return; }
 
-  showLoading('Analyzing Codebase Architecture…', 'Extracting AST functions, classes, and language metrics…', [
+  showLoading('Analyzing Codebase Architecture...', 'Extracting functions, classes, and language metrics...', [
     'Reading source files',
     'Detecting languages',
-    'Parsing functions & classes',
+    'Parsing functions and classes',
     'Validating syntax integrity',
   ]);
 
@@ -383,7 +378,7 @@ async function analyzeCodebase() {
     renderAnalysis();
     renderSidebarStats();
     showScreen('analysis');
-    showToast('✅ Codebase analyzed successfully!', 'success');
+    showToast('Codebase analyzed successfully!', 'success');
   } catch (e) {
     hideLoading();
     showToast('Analysis failed: ' + e.message, 'error');
@@ -398,14 +393,14 @@ function renderAnalysis() {
   const fnHtml = fns.length ? `<div class="fn-list">Parsed Functions: ${fns.map(f => `<code>${escHtml(f)}</code>`).join(', ')}</div>` : '';
 
   container.innerHTML = `
-    <strong>📊 Project Structure Overview</strong>
+    <strong>Project Structure Overview</strong>
     <div style="margin-top:10px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
       <div><strong>${a.file_count}</strong> <span class="text-muted">files</span></div>
       <div><strong>${a.total_lines?.toLocaleString()}</strong> <span class="text-muted">lines</span></div>
       <div><strong>${a.function_count}</strong> <span class="text-muted">functions</span></div>
     </div>
     <div style="margin-top:10px; font-size:0.8rem; color:var(--text-2);">
-      <strong>Languages:</strong> ${Object.entries(a.languages || {}).map(([k, v]) => `${k} (${v})`).join(' · ')}
+      <strong>Languages:</strong> ${Object.entries(a.languages || {}).map(([k, v]) => `${k} (${v})`).join(' | ')}
     </div>
     ${fnHtml}
   `;
@@ -421,10 +416,10 @@ function renderSidebarStats() {
   const syntaxPill = $('syntax-status-pill');
   if (a.syntax_validation && a.syntax_validation.all_valid) {
     syntaxPill.className = 'syntax-pill syntax-valid mb-12';
-    syntaxPill.innerHTML = '<span class="pill-icon">✓</span> AST Syntax Validated';
+    syntaxPill.innerHTML = '<span class="pill-icon"><i class="fa-solid fa-check"></i></span> AST Syntax Validated';
   } else {
     syntaxPill.className = 'syntax-pill syntax-invalid mb-12';
-    syntaxPill.innerHTML = '⚠️ Syntax Errors Detected';
+    syntaxPill.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Syntax Errors Detected';
   }
 
   $('stats-grid').innerHTML = [
@@ -466,7 +461,7 @@ async function executeTask() {
   if (!task) { showToast('Please describe the task first', 'error'); return; }
   if (Object.keys(state.files).length === 0) { showToast('Please upload files first', 'error'); return; }
 
-  showLoading('AI Agent Working…', 'Formulating plan and generating code changes…', [
+  showLoading('AI Agent Working...', 'Formulating plan and generating code changes...', [
     'Reading codebase context',
     'Identifying target files',
     'Formulating modification plan',
@@ -502,7 +497,6 @@ async function executeTask() {
     state.acceptedFiles.clear();
     state.rejectedFiles.clear();
 
-    // Store task in history
     state.taskHistory.unshift({
       task,
       timestamp: new Date().toLocaleTimeString(),
@@ -514,7 +508,7 @@ async function executeTask() {
     renderResults(data);
     showScreen('results');
     updateDiffBadge();
-    showToast(`✅ Task complete! ${Object.keys(state.proposedChanges).length} file(s) modified.`, 'success');
+    showToast(`Task complete! ${Object.keys(state.proposedChanges).length} file(s) modified.`, 'success');
   } catch (e) {
     hideLoading();
     showToast('Task failed: ' + e.message, 'error');
@@ -525,7 +519,6 @@ async function executeTask() {
    RENDER RESULTS
 ═══════════════════════════════════════════════════════════ */
 function renderResults(data) {
-  // Plan
   if (data.plan && data.plan.trim()) {
     $('plan-content').innerHTML = renderMarkdown(data.plan);
     $('plan-card').classList.remove('hidden');
@@ -533,20 +526,17 @@ function renderResults(data) {
     $('plan-card').classList.add('hidden');
   }
 
-  // Explanation
   $('explanation-content').innerHTML = renderMarkdown(data.explanation || 'No explanation provided.');
 
-  // Syntax Banner
   const syntaxBanner = $('result-syntax-banner');
   if (data.syntax_validation && data.syntax_validation.all_valid) {
     syntaxBanner.className = 'alert-banner alert-success mb-16';
-    syntaxBanner.innerHTML = '<span>✓ <strong>Syntax Verification:</strong> All proposed code changes passed syntax integrity validation.</span>';
+    syntaxBanner.innerHTML = '<span><i class="fa-solid fa-circle-check"></i> <strong>Syntax Verification:</strong> All proposed code changes passed AST syntax integrity checks.</span>';
   } else if (data.syntax_validation && !data.syntax_validation.all_valid) {
     syntaxBanner.className = 'alert-banner alert-banner-error mb-16';
-    syntaxBanner.innerHTML = '<span>⚠️ <strong>Syntax Warning:</strong> Some proposed changes contain syntax errors. Inspect diffs carefully.</span>';
+    syntaxBanner.innerHTML = '<span><i class="fa-solid fa-triangle-exclamation"></i> <strong>Syntax Warning:</strong> Some proposed changes contain syntax errors. Inspect diffs carefully.</span>';
   }
 
-  // File changes list
   const changesList = $('changes-list');
   const changes = state.proposedChanges;
   const fileNames = Object.keys(changes);
@@ -558,14 +548,13 @@ function renderResults(data) {
 
   changesList.innerHTML = fileNames.map(fname => buildChangeItem(fname, changes[fname])).join('');
 
-  // Wire events
   changesList.querySelectorAll('.change-header').forEach(header => {
     header.addEventListener('click', e => {
       if (e.target.closest('.edit-btn')) return;
       const body = header.nextElementSibling;
       const isOpen = body.classList.contains('open');
       body.classList.toggle('open', !isOpen);
-      header.querySelector('.change-toggle').textContent = isOpen ? '▸ Show diff' : '▾ Hide diff';
+      header.querySelector('.change-toggle').innerHTML = isOpen ? '<i class="fa-solid fa-chevron-right"></i> Show diff' : '<i class="fa-solid fa-chevron-down"></i> Hide diff';
     });
   });
 
@@ -584,12 +573,11 @@ function renderResults(data) {
     });
   });
 
-  // Auto-open first diff
   const firstBody = changesList.querySelector('.change-body');
   if (firstBody) {
     firstBody.classList.add('open');
     const firstToggle = changesList.querySelector('.change-toggle');
-    if (firstToggle) firstToggle.textContent = '▾ Hide diff';
+    if (firstToggle) firstToggle.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Hide diff';
     const diffContainer = firstBody.querySelector('.diff-container');
     if (diffContainer && diffContainer.dataset.diff) {
       renderDiff(diffContainer.id, diffContainer.dataset.diff);
@@ -611,15 +599,15 @@ function buildChangeItem(fname, newContent) {
   const rejected = state.rejectedFiles.has(fname);
 
   const statusBadge = accepted
-    ? '<span class="badge badge-green" style="margin-left:4px">✓ Accepted</span>'
+    ? '<span class="badge badge-green" style="margin-left:4px"><i class="fa-solid fa-check"></i> Accepted</span>'
     : rejected
-      ? '<span class="badge badge-red" style="margin-left:4px">✕ Rejected</span>'
+      ? '<span class="badge badge-red" style="margin-left:4px"><i class="fa-solid fa-xmark"></i> Rejected</span>'
       : '';
 
   return `
     <div class="change-item" id="change-${sanitizeId(fname)}">
       <div class="change-header">
-        <span>📄</span>
+        <i class="fa-solid fa-file-code text-indigo"></i>
         <span class="change-filename">${escHtml(fname)}</span>
         ${isNew ? '<span class="change-new-badge">NEW FILE</span>' : ''}
         ${statusBadge}
@@ -627,17 +615,17 @@ function buildChangeItem(fname, newContent) {
           <span class="stat-add">+${addedLines}</span>
           <span class="stat-del">-${removedLines}</span>
         </span>
-        <button class="btn btn-ghost btn-sm edit-btn" data-file="${escAttr(fname)}" title="Edit code manually">✏️ Edit</button>
-        <span class="change-toggle">▸ Show diff</span>
+        <button class="btn btn-ghost btn-sm edit-btn" data-file="${escAttr(fname)}" title="Edit code manually"><i class="fa-solid fa-pen"></i> Edit</button>
+        <span class="change-toggle"><i class="fa-solid fa-chevron-right"></i> Show diff</span>
       </div>
       <div class="change-body">
         <div class="diff-container" id="diff-${sanitizeId(fname)}" data-diff="${escAttr(diffText)}"></div>
         <div class="change-actions">
           <button class="btn btn-success accept-btn" data-file="${escAttr(fname)}" ${accepted ? 'disabled' : ''}>
-            ✅ Accept Changes
+            <i class="fa-solid fa-check"></i> Accept Changes
           </button>
           <button class="btn btn-danger reject-btn" data-file="${escAttr(fname)}" ${rejected ? 'disabled' : ''}>
-            ❌ Reject
+            <i class="fa-solid fa-xmark"></i> Reject
           </button>
         </div>
       </div>
@@ -700,7 +688,7 @@ function acceptChange(fname) {
   refreshChangeItem(fname);
   updateChangesSummary();
   updateDiffBadge();
-  showToast(`✅ Accepted changes to ${fname}`, 'success');
+  showToast(`Accepted changes to ${fname}`, 'success');
 }
 
 function rejectChange(fname) {
@@ -709,7 +697,7 @@ function rejectChange(fname) {
   refreshChangeItem(fname);
   updateChangesSummary();
   updateDiffBadge();
-  showToast(`❌ Rejected changes to ${fname}`, 'info');
+  showToast(`Rejected changes to ${fname}`, 'info');
 }
 
 function refreshChangeItem(fname) {
@@ -727,13 +715,13 @@ function refreshChangeItem(fname) {
     const badge = document.createElement('span');
     badge.className = 'badge badge-green';
     badge.style.marginLeft = '4px';
-    badge.textContent = '✓ Accepted';
+    badge.innerHTML = '<i class="fa-solid fa-check"></i> Accepted';
     header.insertBefore(badge, header.querySelector('.change-stats'));
   } else if (rejected) {
     const badge = document.createElement('span');
     badge.className = 'badge badge-red';
     badge.style.marginLeft = '4px';
-    badge.textContent = '✕ Rejected';
+    badge.innerHTML = '<i class="fa-solid fa-xmark"></i> Rejected';
     header.insertBefore(badge, header.querySelector('.change-stats'));
   }
 
@@ -751,7 +739,7 @@ function updateChangesSummary() {
   if (total === 0) { summary.hidden = true; return; }
   summary.hidden = false;
   $('changes-count-text').textContent =
-    `${total} file(s) changed · ${accepted} accepted · ${rejected} rejected · ${pending} pending review`;
+    `${total} file(s) changed | ${accepted} accepted | ${rejected} rejected | ${pending} pending review`;
 }
 
 function updateDiffBadge() {
@@ -778,9 +766,8 @@ function setupEditCodeModal() {
     const newCode = $('edit-code-textarea').value;
     state.proposedChanges[state.editingFile] = newCode;
     modal.classList.add('hidden');
-    showToast(`💾 Saved updates to ${state.editingFile}`, 'success');
+    showToast(`Saved updates to ${state.editingFile}`, 'success');
 
-    // Re-render change item
     renderResults({
       plan: $('plan-content').innerHTML,
       explanation: $('explanation-content').innerHTML,
@@ -818,7 +805,7 @@ function renderCodeExplorer() {
 
   treeEl.innerHTML = fileNames.map(fname => `
     <div class="tree-item" data-file="${escAttr(fname)}">
-      <span>📄 ${escHtml(fname)}</span>
+      <span><i class="fa-solid fa-file-code text-indigo"></i> ${escHtml(fname)}</span>
       ${fname in state.proposedChanges ? '<span class="badge badge-amber">Modified</span>' : ''}
     </div>
   `).join('');
@@ -831,7 +818,6 @@ function renderCodeExplorer() {
     });
   });
 
-  // Select first file by default
   const firstItem = treeEl.querySelector('.tree-item');
   if (firstItem) firstItem.click();
 }
@@ -841,7 +827,6 @@ function displayExplorerFile(fname, content) {
   const codeBlock = $('explorer-code-block');
   codeBlock.textContent = content;
 
-  // Set language class for highlight.js
   const ext = fname.split('.').pop().toLowerCase();
   codeBlock.className = `language-${ext}`;
   hljs.highlightElement(codeBlock);
@@ -867,7 +852,7 @@ function renderDedicatedDiff() {
     if (state.diffFormat === 'sidebyside') {
       return `
         <div class="result-card">
-          <h4>📄 ${escHtml(fname)}</h4>
+          <h4><i class="fa-solid fa-file-code text-indigo"></i> ${escHtml(fname)}</h4>
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px;">
             <div>
               <strong style="font-size:0.78rem; color:var(--text-3);">BEFORE:</strong>
@@ -885,7 +870,7 @@ function renderDedicatedDiff() {
     const diffText = computeUnifiedDiff(fname, original, proposed);
     return `
       <div class="result-card">
-        <h4>📄 ${escHtml(fname)}</h4>
+        <h4><i class="fa-solid fa-file-code text-indigo"></i> ${escHtml(fname)}</h4>
         <div class="diff-container" id="ded-diff-${sanitizeId(fname)}" style="max-height:500px; margin-top:10px;"></div>
       </div>
     `;
@@ -898,7 +883,6 @@ function renderDedicatedDiff() {
     });
   }
 
-  // Highlight blocks in sidebyside
   container.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
 }
 
@@ -911,7 +895,7 @@ function setupSecurityAudit() {
       showToast('Please upload a codebase first', 'error'); return;
     }
 
-    showLoading('Running Security Audit…', 'Scanning for OWASP vulnerabilities and code quality risks…');
+    showLoading('Running Security Audit...', 'Scanning for OWASP vulnerabilities and code quality risks...');
     try {
       const res = await fetch('/api/security-audit', {
         method: 'POST',
@@ -928,7 +912,7 @@ function setupSecurityAudit() {
       hideLoading();
 
       renderSecurityAuditResults(data);
-      showToast('✅ Security scan completed!', 'success');
+      showToast('Security scan completed!', 'success');
     } catch (e) {
       hideLoading();
       showToast('Audit failed: ' + e.message, 'error');
@@ -944,21 +928,21 @@ function renderSecurityAuditResults(data) {
     <div class="audit-score-card">
       <div class="audit-rating grade-${rating}">${rating}</div>
       <div>
-        <h3>Security &amp; Code Quality Rating: Grade ${rating}</h3>
+        <h3>Security and Code Quality Rating: Grade ${rating}</h3>
         <p class="text-muted" style="margin-top:2px;">${escHtml(data.summary || 'Security audit scan completed.')}</p>
       </div>
     </div>
 
-    <h4>Vulnerabilities &amp; Anti-Patterns Identified (${data.issues?.length || 0})</h4>
+    <h4>Vulnerabilities and Anti-Patterns Identified (${data.issues?.length || 0})</h4>
     <div class="mt-12">
       ${(data.issues || []).map(iss => `
         <div class="audit-issue-item">
           <div class="issue-header">
-            <span class="issue-title">⚠️ ${escHtml(iss.issue)}</span>
+            <span class="issue-title"><i class="fa-solid fa-triangle-exclamation"></i> ${escHtml(iss.issue)}</span>
             <span class="badge badge-${iss.severity === 'HIGH' ? 'red' : iss.severity === 'MEDIUM' ? 'amber' : 'blue'}">${iss.severity}</span>
           </div>
           <div style="font-size:0.78rem; color:var(--text-3); font-family:var(--mono);">File: ${escHtml(iss.file)}</div>
-          <div class="issue-rec">💡 <strong>Recommendation:</strong> ${escHtml(iss.recommendation)}</div>
+          <div class="issue-rec"><i class="fa-solid fa-lightbulb text-indigo"></i> <strong>Recommendation:</strong> ${escHtml(iss.recommendation)}</div>
         </div>
       `).join('') || '<p class="text-muted">No security vulnerabilities detected.</p>'}
     </div>
@@ -972,7 +956,7 @@ function setupTestSandbox() {
       showToast('Please upload a codebase first', 'error'); return;
     }
 
-    showLoading('Running Unit Tests in Sandbox…', 'Provisioning isolated test container and executing unittest suite…');
+    showLoading('Running Unit Tests in Sandbox...', 'Provisioning isolated test workspace and executing unittest suite...');
     try {
       const res = await fetch('/api/run-tests', {
         method: 'POST',
@@ -985,7 +969,7 @@ function setupTestSandbox() {
       hideLoading();
 
       renderTestSandboxResults(data);
-      showToast(data.success ? '✅ All tests passed!' : '⚠️ Test execution finished', data.success ? 'success' : 'info');
+      showToast(data.success ? 'All unit tests passed!' : 'Test execution finished', data.success ? 'success' : 'info');
     } catch (e) {
       hideLoading();
       showToast('Test execution error: ' + e.message, 'error');
@@ -996,13 +980,13 @@ function setupTestSandbox() {
 function renderTestSandboxResults(data) {
   const container = $('tests-results-container');
   const successBadge = data.success
-    ? '<span class="badge badge-green">✓ PASSED</span>'
-    : '<span class="badge badge-red">✕ FAILED / ERRORS</span>';
+    ? '<span class="badge badge-green"><i class="fa-solid fa-check"></i> PASSED</span>'
+    : '<span class="badge badge-red"><i class="fa-solid fa-xmark"></i> FAILED / ERRORS</span>';
 
   container.innerHTML = `
     <div class="result-card mb-16">
       <div class="result-card-header">
-        <span class="result-icon">🧪</span>
+        <span class="result-icon"><i class="fa-solid fa-vial"></i></span>
         <h3>Execution Summary</h3>
         ${successBadge}
       </div>
@@ -1011,7 +995,7 @@ function renderTestSandboxResults(data) {
     </div>
 
     <h4>Terminal Output Log</h4>
-    <div class="terminal-output mt-8">${escHtml(data.stdout + '\n' + data.stderr || 'No stdout/stderr captured.')}</div>
+    <div class="terminal-output mt-8">${escHtml(data.stdout + '\n' + data.stderr || 'No output captured.')}</div>
   `;
 }
 
@@ -1036,13 +1020,13 @@ function renderHistory() {
   container.innerHTML = state.taskHistory.map((item, idx) => `
     <div class="result-card mb-12">
       <div class="result-card-header">
-        <span class="result-icon">📜</span>
+        <span class="result-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
         <h3>Task #${state.taskHistory.length - idx}</h3>
         <span class="badge badge-blue">${item.timestamp}</span>
       </div>
       <p><strong>Requirement:</strong> ${escHtml(item.task)}</p>
       <div style="font-size:0.78rem; color:var(--text-3); margin-top:4px;">
-        Model: <code>${item.model}</code> · Files Modified: <strong>${item.changesCount}</strong>
+        Model: <code>${item.model}</code> | Files Modified: <strong>${item.changesCount}</strong>
       </div>
     </div>
   `).join('');
@@ -1073,7 +1057,7 @@ async function downloadZIP() {
     a.download = 'codebase_with_changes.zip';
     a.click();
     URL.revokeObjectURL(url);
-    showToast('📦 ZIP exported successfully!', 'success');
+    showToast('ZIP exported successfully!', 'success');
   } catch (e) {
     showToast('Download error: ' + e.message, 'error');
   }
@@ -1088,8 +1072,9 @@ function setupChat() {
     if (!$('chat-drawer').classList.contains('hidden') && $('chat-messages').children.length === 0) {
       $('chat-messages').innerHTML = `
         <div class="chat-empty">
-          💬 Ask anything about your code architecture or refactoring.<br>
-          <span style="font-size:0.7rem">The assistant has context of your active codebase.</span>
+          <i class="fa-solid fa-comments text-indigo" style="font-size:1.5rem; margin-bottom:6px; display:block;"></i>
+          Ask anything about your code architecture or refactoring.<br>
+          <span style="font-size:0.72rem; color:var(--text-3);">The assistant has context of your active codebase.</span>
         </div>
       `;
     }
@@ -1118,7 +1103,7 @@ async function sendChat() {
 
   const assistantEl = document.createElement('div');
   assistantEl.className = 'chat-msg assistant';
-  assistantEl.innerHTML = '<span style="opacity:0.5">Thinking…</span>';
+  assistantEl.innerHTML = '<span style="opacity:0.5"><i class="fa-solid fa-spinner fa-spin"></i> Thinking...</span>';
   $('chat-messages').appendChild(assistantEl);
   $('chat-messages').scrollTop = $('chat-messages').scrollHeight;
 
@@ -1195,7 +1180,7 @@ function showLoading(title, sub, steps = [], animate = false) {
   const stepsEl = $('loading-steps');
   stepsEl.innerHTML = steps.map((s, i) => `
     <div class="loading-step" id="lstep-${i}">
-      <span>${i === 0 ? '⏳' : '○'}</span> ${escHtml(s)}
+      <span>${i === 0 ? '<i class="fa-solid fa-spinner fa-spin"></i>' : '<i class="fa-regular fa-circle"></i>'}</span> ${escHtml(s)}
     </div>
   `).join('');
 
@@ -1206,11 +1191,11 @@ function showLoading(title, sub, steps = [], animate = false) {
     document.getElementById('lstep-0')?.classList.add('active');
     _loadingInterval = setInterval(() => {
       const prev = document.getElementById(`lstep-${current}`);
-      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('span').textContent = '✓'; }
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('span').innerHTML = '<i class="fa-solid fa-check"></i>'; }
       current++;
       if (current < steps.length) {
         const next = document.getElementById(`lstep-${current}`);
-        if (next) { next.classList.add('active'); next.querySelector('span').textContent = '⏳'; }
+        if (next) { next.classList.add('active'); next.querySelector('span').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
       } else {
         clearInterval(_loadingInterval);
       }
